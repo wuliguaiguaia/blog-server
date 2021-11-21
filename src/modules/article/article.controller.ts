@@ -8,10 +8,12 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 import { ArticleService } from './article.service';
 import {
   CreateArticleDto,
   UpdateArticleDto,
+  QueryArticleListDto,
   QueryArticleDto,
 } from './dto/article.dto';
 
@@ -22,17 +24,33 @@ export class ArticleController {
   /**
    * 获取文章列表
    */
+  @Get('/list')
+  async getArticleList(@Query() articleDto: QueryArticleListDto) {
+    const [list, total] = await this.articleService.getArticleList(articleDto);
+    return { list, total };
+  }
+
+  /**
+   * 获取文章
+   */
   @Get()
-  async getArticleList(@Query() articleDto: QueryArticleDto) {
-    return await this.articleService.getArticleList(articleDto);
+  async getArticle(@Query() articleDto: QueryArticleDto) {
+    return await this.articleService.getArticleById(articleDto);
   }
 
   /**
    * 增加文章
    */
   @Post()
-  async addArticle(@Body() articleDto: CreateArticleDto) {
-    return await this.articleService.addArticle(articleDto);
+  @Transaction()
+  /* 可能出现两张表同时进行操作的情况
+    因此开启事务事件：为了让同时进行的表操作要么一起完成，要么都失败
+    @Transaction()和 @TransactionManager() manager: EntityManager 是事务的装饰器和对象 */
+  async addArticle(
+    @Body() articleDto: CreateArticleDto,
+    @TransactionManager() manager: EntityManager,
+  ) {
+    return await this.articleService.addArticle(articleDto, manager);
   }
   /**
    * 更新文章

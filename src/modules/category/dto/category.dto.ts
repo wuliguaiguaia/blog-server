@@ -9,11 +9,7 @@ export class CreateCategoryDto {
 }
 
 export class QueryCategoryDto {
-  @IsNotEmpty({
-    message: '页码不能为空',
-  })
   page: number;
-
   prepage: number;
 }
 

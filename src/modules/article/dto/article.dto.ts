@@ -9,23 +9,35 @@ export class CreateArticleDto {
   @IsNotEmpty({
     message: '类别不能为空',
   })
-  category: () => string; // ?
+  categories: any[]; // ?
   keywords: string;
   content: string;
 }
 
-export class QueryArticleDto {
+export class QueryArticleListDto {
   @IsNotEmpty({
     message: '页码不能为空',
   })
   page: number;
 
   prepage: number;
+
+  category: number;
 }
 
-export class UpdateArticleDto extends CreateArticleDto {
+export class QueryArticleDto {
   @IsNotEmpty({
     message: '文章id不能为空',
   })
   id: number;
+}
+
+export class UpdateArticleDto extends QueryArticleDto {
+  title: string;
+
+  categories: () => string;
+
+  keywords: string;
+
+  content: string;
 }

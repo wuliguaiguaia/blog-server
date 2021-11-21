@@ -4,7 +4,7 @@ import { MysqlDataType } from './../common/constants/database/mysql';
  * 用户实体
  */
 
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
 import { ArticleEntity } from './article.entity';
 import { BaseEntity } from './base-entity/base.entity';
 

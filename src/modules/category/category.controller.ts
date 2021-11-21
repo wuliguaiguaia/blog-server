@@ -26,7 +26,10 @@ export class CategoryController {
    */
   @Get()
   async getCategoryList(@Query() categoryDto: QueryCategoryDto) {
-    return await this.cateogoryService.getCategoryList(categoryDto);
+    const [list, total] = await this.cateogoryService.getCategoryList(
+      categoryDto,
+    );
+    return { list, total };
   }
 
   /**

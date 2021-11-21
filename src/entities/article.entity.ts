@@ -39,11 +39,12 @@ export class ArticleEntity extends BaseEntity {
   })
   content: string;
 
-  @ManyToMany(() => CategoryEntity, (category) => category.id)
+  @ManyToMany(() => CategoryEntity, (category) => category.articles)
   @JoinTable()
-  category: CategoryEntity[];
+  categories: CategoryEntity[];
 
   @ManyToOne(() => UserInfoEntity, (user) => user.articles)
   @JoinColumn()
   user: UserInfoEntity;
+  /* 在多对一/一对多的关系中，拥有方总是多对一的 */
 }

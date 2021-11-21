@@ -17,3 +17,5 @@ redis 可视化工具：redis desktop management
 postman
 workspace：lemon
 folder：blog-server
+
+端口默认 3009

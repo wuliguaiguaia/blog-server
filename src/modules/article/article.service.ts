@@ -1,3 +1,4 @@
+import { CategoryEntity } from 'src/entities/category.entity';
 /*
  * service 提供操作数据库服务接口
  */
@@ -5,7 +6,7 @@ import { ArticleEntity } from './../../entities/article.entity';
 import {
   CreateArticleDto,
   UpdateArticleDto,
-  QueryArticleDto,
+  QueryArticleListDto,
 } from './dto/article.dto';
 import {
   EntityRepository,
@@ -15,6 +16,7 @@ import {
   getRepository,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { listeners } from 'process';
 
 @EntityRepository(ArticleEntity)
 export class ArticleService {
@@ -31,7 +33,7 @@ export class ArticleService {
    * 增加文章
    * @param articleDto
    */
-  async addArticle(articleDto: CreateArticleDto) {
+  async addArticle(articleDto: CreateArticleDto, manager) {
     const list = await this.getArticleByCondition({
       condition: 'title = :title', // and or
       values: { title: articleDto.title },
@@ -39,14 +41,18 @@ export class ArticleService {
     if (list.length > 0) {
       throw new Error('文章名不能重复');
     }
-    return await this.queryBuilder
-      .insert()
-      .into(ArticleEntity)
-      .values({
-        ...articleDto,
-      })
-      .execute();
-    // return await this.articleInfoRepository.save(articleDto);
+
+    const categories = [];
+    if (articleDto.categories?.length !== 0) {
+      for (const id of Object.values(articleDto.categories)) {
+        const one = await manager.findOne(CategoryEntity, {
+          id: +id,
+        });
+        categories.push(one);
+      }
+    }
+    articleDto.categories = categories;
+    return await manager.save(ArticleEntity, articleDto);
   }
 
   /**
@@ -61,15 +67,33 @@ export class ArticleService {
       .getMany();
   }
 
+  /* 
+    获取单个文章详情
+  */
+  async getArticleById(query) {
+    const list = await getRepository(ArticleEntity)
+      .createQueryBuilder('article')
+      // .leftJoinAndSelect('question.categories', 'category')
+      .where('article.id = :id', { id: query.id })
+      .getOne();
+    return list;
+  }
+
   /**
    * 根据类型查询文章
    * @param whereCondition
    */
   async getArticleByCategory(category: number) {
-    return await this.getArticleByCondition({
-      condition: 'category = :category',
-      values: { category },
-    });
+    const a = await getConnection()
+      .createQueryBuilder()
+      .relation(ArticleEntity, 'categories')
+      .of(1) // 也可以使用post id
+      .loadMany();
+
+    return await getRepository(ArticleEntity)
+      .createQueryBuilder('article')
+      .where('category = :category', { category: +category })
+      .getMany();
   }
 
   /**
@@ -107,7 +131,7 @@ export class ArticleService {
   /**
    * 查询文章列表
    */
-  async getArticleList(articleDto: QueryArticleDto) {
+  async getArticleList(articleDto: QueryArticleListDto) {
     const whereCondition = [];
     const conditionValues = {};
     for (const key in articleDto) {
@@ -115,6 +139,10 @@ export class ArticleService {
         whereCondition.push(`article.${key} = :${key}`);
         conditionValues[key] = articleDto[key];
       }
+    }
+
+    if (articleDto.category) {
+      return await this.getArticleByCategory(articleDto.category);
     }
 
     return await getRepository(ArticleEntity)

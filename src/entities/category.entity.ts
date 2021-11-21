@@ -1,6 +1,6 @@
 import { MysqlDataType } from './../common/constants/database/mysql';
 import { ArticleEntity } from './article.entity';
-import { Column, Entity, ManyToMany, JoinTable } from 'typeorm';
+import { Column, Entity, ManyToMany } from 'typeorm';
 import { BaseEntity } from './base-entity/base.entity';
 
 @Entity('category')
@@ -14,7 +14,6 @@ export class CategoryEntity extends BaseEntity {
   })
   name: string;
 
-  @ManyToMany(() => ArticleEntity, (article) => article.category)
-  @JoinTable()
+  @ManyToMany(() => ArticleEntity, (article) => article.categories)
   articles: ArticleEntity[];
 }

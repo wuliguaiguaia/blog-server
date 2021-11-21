@@ -13,7 +13,7 @@ export class AuthController {
   @Post('login')
   async login(@Body() userDto: LoginDto, @Req() req) {
     const { mobile, password } = userDto;
-    console.log(mobile, password);
+    // console.log(mobile, password);
     const users = await this.userService.getUserByMobile(mobile);
     if (users.length === 0) {
       throw new ApiException(ApiErrorCode.NOT_VALUABLE_USER_ID, '用户不存在');
