@@ -1,0 +1,18 @@
+{
+  "github": {
+    "clientID": "a3e03d162eec52ad399a",
+    "clientSecrets": "2309689e6c5054b93851f849e32b367d5f207960",
+    "accessTokenUri": "https://github.com/login/oauth/access_token",
+    "userInfoUri": "`https://api.github.com/user"
+  },
+  "redisServer": {
+    "host": "localhost",
+    "port": "6379"
+  },
+  "log": {
+    "prefix":"柠檬树"
+  },
+  "cls": {
+    "namespace": "lemon"
+  }
+}

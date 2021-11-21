@@ -1,0 +1,30 @@
+{
+  "port": 3009,
+  "db": {
+    "type": "mysql",
+    "host": "127.0.0.1",
+    "port": 3306,
+    "username": "root",
+    "password": "mysql123",
+    "database": "test001",
+    "synchronize": true,
+    "logging": [
+      "error"
+    ],
+    "maxQueryExecutionTime": 1000,
+    "entities": [
+      "src/entities/**/*.ts"
+    ],
+    "migrations": [
+      "src/migration/**/*.ts"
+    ],
+    "subscribers": [
+      "src/subscriber/**/*.ts"
+    ],
+    "cli": {
+      "entitiesDir": "src/entities",
+      "migrationsDir": "src/migration",
+      "subscribersDir": "src/subscriber"
+    }
+  }
+}

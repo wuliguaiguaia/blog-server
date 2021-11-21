@@ -1,0 +1,30 @@
+{
+  "port": 3000,
+  "db": {
+    "type": "mysql",
+    "host": "localhost",
+    "port": 3306,
+    "username": "root",
+    "password": "mysql123",
+    "database": "test101",
+    "synchronize": false,
+    "logging": [
+      "error"
+    ],
+    "maxQueryExecutionTime": 1000,
+    "entities": [
+      "src/entities/**/*.ts"
+    ],
+    "migrations": [
+      "src/migration/**/*.ts"
+    ],
+    "subscribers": [
+      "src/subscriber/**/*.ts"
+    ],
+    "cli": {
+      "entitiesDir": "src/entities",
+      "migrationsDir": "src/migration",
+      "subscribersDir": "src/subscriber"
+    }
+  }
+}

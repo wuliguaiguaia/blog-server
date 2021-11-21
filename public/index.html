@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'; object-src 'none';">
+  <title>首页</title>
+</head>
+<body>
+  welcome come to my world ~
+  <button id="login">登录</button>
+  <button id="logout">登出</button>
+  <button id="getusers">getusers</button>
+  <!-- Refused to load the script 'http://localhost:3009/main.js' because it violates the following Content Security Policy
+  directive: "script-src 'unsafe-inline'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as
+  a fallback. -->
+  <!-- <script src="./main.js"></script> -->
+  <script>
+     const getusers = document.getElementById('getusers');
+      getusers.addEventListener('click', (e) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('get', 'http://localhost:3009/user?page=1');
+        xhr.send();
+        xhr.onreadystatechange = (res) => {
+          if (res.status >= 200 && xhr.readyState === 4) {
+            console.log(123);
+          }
+        };
+      });
+    const login = document.getElementById('login');
+      login.addEventListener('click', (e) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('post', 'http://localhost:3009/login');
+        xhr.setRequestHeader('Content-Type', 'application/json')
+        xhr.send(JSON.stringify({ mobile: '222', password: 'user2' }));
+        xhr.onreadystatechange = (res) => {
+          if (res.status >= 200 && xhr.readyState === 4) {
+            console.log(123);
+          }
+        };
+      });
+     
+      const logout = document.getElementById('logout');
+        logout.addEventListener('click', (e) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('get', 'http://localhost:3009/logout');
+          xhr.send();
+          xhr.onreadystatechange = (res) => {
+            if (res.status >= 200 && xhr.readyState === 4) {
+              console.log(123);
+            }
+          };
+        });
+
+  </script>
+</body>
+</html>
