@@ -16,7 +16,6 @@ import {
   getRepository,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { listeners } from 'process';
 
 @EntityRepository(ArticleEntity)
 export class ArticleService {
@@ -67,33 +66,53 @@ export class ArticleService {
       .getMany();
   }
 
-  /* 
-    获取单个文章详情
-  */
+  /**
+   * 获取单个文章详情
+   * @param query.id 文章id
+   */
   async getArticleById(query) {
-    const list = await getRepository(ArticleEntity)
-      .createQueryBuilder('article')
-      // .leftJoinAndSelect('question.categories', 'category')
-      .where('article.id = :id', { id: query.id })
+    return await getConnection()
+      .createQueryBuilder()
+      .select('article')
+      .from(ArticleEntity, 'article')
+      .where('article.id = :id', { id: +query.id })
       .getOne();
-    return list;
   }
 
   /**
-   * 根据类型查询文章
-   * @param whereCondition
+   * 根据多个类型查询文章
+   * @param articleDto
    */
-  async getArticleByCategory(category: number) {
-    const a = await getConnection()
-      .createQueryBuilder()
-      .relation(ArticleEntity, 'categories')
-      .of(1) // 也可以使用post id
-      .loadMany();
-
-    return await getRepository(ArticleEntity)
-      .createQueryBuilder('article')
-      .where('category = :category', { category: +category })
-      .getMany();
+  async getArticleByCategory(articleDto) {
+    let articles = await getRepository(CategoryEntity).findByIds(
+      articleDto.categories.map((item) => +item),
+      {
+        relations: ['articles'],
+      },
+    );
+    const set = new Set();
+    articles = articles
+      .reduce((res, item) => {
+        const { articles } = item;
+        articles.forEach((item) => {
+          if (!set.has(item.id)) {
+            res.push(item);
+          }
+          set.add(item.id);
+        });
+        return res;
+      }, [])
+      .sort(
+        (item1, item2) =>
+          new Date(item2.createTime).getTime() -
+          new Date(item1.createTime).getTime(),
+      );
+    const count = articles.length;
+    const list = articles.splice(
+      articleDto.prepage * (articleDto.page - 1) || 0,
+      articleDto.prepage ? +articleDto.prepage : count,
+    );
+    return [list, count];
   }
 
   /**
@@ -111,7 +130,7 @@ export class ArticleService {
     return await this.queryBuilder
       .update(ArticleEntity)
       .set({
-        ...articleDto,
+        // ...articleDto,
       })
       .where('id = :id', { id: articleDto.id })
       .execute();
@@ -140,9 +159,8 @@ export class ArticleService {
         conditionValues[key] = articleDto[key];
       }
     }
-
-    if (articleDto.category) {
-      return await this.getArticleByCategory(articleDto.category);
+    if (articleDto.categories?.length) {
+      return await this.getArticleByCategory(articleDto);
     }
 
     return await getRepository(ArticleEntity)

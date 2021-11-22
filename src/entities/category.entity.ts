@@ -16,4 +16,6 @@ export class CategoryEntity extends BaseEntity {
 
   @ManyToMany(() => ArticleEntity, (article) => article.categories)
   articles: ArticleEntity[];
+
+  articlesLen: number;
 }

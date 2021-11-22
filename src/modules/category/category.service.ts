@@ -94,23 +94,18 @@ export class CategoryService {
   /**
    * 查询分类列表
    */
-  async getCategoryList(categoryDto: QueryCategoryDto) {
-    const whereCondition = [];
-    const conditionValues = {};
-    for (const key in categoryDto) {
-      if (!['page', 'prepage'].includes(key)) {
-        whereCondition.push(`category.${key} = :${key}`);
-        conditionValues[key] = categoryDto[key];
-      }
-    }
-
-    return await getRepository(CategoryEntity)
-      .createQueryBuilder('category')
-      .where(whereCondition.join(' and '), conditionValues)
-      .orderBy('category.update_time', 'DESC') // ASC
-      .take(categoryDto.prepage && categoryDto.prepage)
-      .skip(categoryDto.prepage * (categoryDto.page - 1) || 0)
-      .getManyAndCount();
+  async getCategoryList() {
+    const response = await getRepository(CategoryEntity).find({
+      relations: ['articles'],
+    });
+    return [
+      response.map((item) => {
+        item.articlesLen = item.articles.length;
+        delete item.articles;
+        return item;
+      }),
+      response.length,
+    ];
   }
 
   /**

@@ -39,6 +39,13 @@ export class ArticleEntity extends BaseEntity {
   })
   content: string;
 
+  @Column({
+    type: MysqlDataType.INT,
+    comment: '浏览次数',
+    default: 0,
+  })
+  viewCount: string;
+
   @ManyToMany(() => CategoryEntity, (category) => category.articles)
   @JoinTable()
   categories: CategoryEntity[];

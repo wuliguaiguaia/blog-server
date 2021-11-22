@@ -9,7 +9,7 @@ export class CreateArticleDto {
   @IsNotEmpty({
     message: '类别不能为空',
   })
-  categories: any[]; // ?
+  categories: string[]; // ?
   keywords: string;
   content: string;
 }
@@ -22,7 +22,7 @@ export class QueryArticleListDto {
 
   prepage: number;
 
-  category: number;
+  categories: string[];
 }
 
 export class QueryArticleDto {
@@ -35,7 +35,7 @@ export class QueryArticleDto {
 export class UpdateArticleDto extends QueryArticleDto {
   title: string;
 
-  categories: () => string;
+  categories: string[];
 
   keywords: string;
 

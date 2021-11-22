@@ -24,11 +24,9 @@ export class CategoryController {
   /**
    * 获取分类列表
    */
-  @Get()
-  async getCategoryList(@Query() categoryDto: QueryCategoryDto) {
-    const [list, total] = await this.cateogoryService.getCategoryList(
-      categoryDto,
-    );
+  @Get('/list')
+  async getCategoryList() {
+    const [list, total] = await this.cateogoryService.getCategoryList();
     return { list, total };
   }
 
