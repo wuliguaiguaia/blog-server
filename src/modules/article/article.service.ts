@@ -71,12 +71,20 @@ export class ArticleService {
    * @param query.id 文章id
    */
   async getArticleById(query) {
-    return await getConnection()
+    const { id } = query;
+    const categories = await getConnection()
+      .createQueryBuilder()
+      .relation(ArticleEntity, 'categories')
+      .of(id)
+      .loadMany();
+    const data = await getConnection()
       .createQueryBuilder()
       .select('article')
       .from(ArticleEntity, 'article')
       .where('article.id = :id', { id: +query.id })
       .getOne();
+    data.categories = categories;
+    return data;
   }
 
   /**
