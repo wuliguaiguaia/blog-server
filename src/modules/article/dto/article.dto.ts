@@ -9,8 +9,12 @@ export class CreateArticleDto {
   @IsNotEmpty({
     message: '类别不能为空',
   })
-  categories: string[]; // ?
+  categories: string[];
+
+  id: number;
+
   keywords: string;
+
   content: string;
 }
 
@@ -23,6 +27,8 @@ export class QueryArticleListDto {
   prepage: number;
 
   categories: string[];
+
+  type: 0 | 1; // categories 查询类型 0: and 1: or
 }
 
 export class QueryArticleDto {

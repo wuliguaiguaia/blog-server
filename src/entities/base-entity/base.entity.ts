@@ -1,12 +1,14 @@
+import { MysqlDataType } from './../../common/constants/database/mysql';
 /**
  * 表实体基类
  * 嵌入式实体
  */
 
 import {
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Column,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 // abstract
@@ -27,11 +29,10 @@ export abstract class BaseEntity {
   })
   updateTime: Date;
 
-  // @Column({
-  //   type: MysqlDataType.TINYINT,
-  //   default: 1,
-  //   nullable: false,
-  //   comment: '是否可用',
-  // })
-  // is_valid: number;
+  @Column({
+    type: MysqlDataType.INT,
+    default: 0,
+    comment: '是否失效',
+  })
+  deleted: number;
 }

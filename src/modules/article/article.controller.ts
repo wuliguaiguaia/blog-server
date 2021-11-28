@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Param,
   Post,
   Put,
   Query,
@@ -25,9 +24,12 @@ export class ArticleController {
    * 获取文章列表
    */
   @Get('/list')
-  async getArticleList(@Query() articleDto: QueryArticleListDto) {
-    const [list, total] = await this.articleService.getArticleList(articleDto);
-    return { list, total };
+  @Transaction()
+  async getArticleList(
+    @Query() articleDto: QueryArticleListDto,
+    @TransactionManager() manger: EntityManager,
+  ) {
+    return await this.articleService.getArticleList(articleDto, manger);
   }
 
   /**
@@ -55,16 +57,32 @@ export class ArticleController {
   /**
    * 更新文章
    */
-  @Put()
-  async updateArticle(@Body() articleDto: UpdateArticleDto) {
-    return await this.articleService.updateArticle(articleDto);
+  @Put('/update')
+  @Transaction()
+  async updateArticle(
+    @Body() articleDto: UpdateArticleDto,
+    @TransactionManager() manager: EntityManager,
+  ) {
+    return await this.articleService.updateArticle(articleDto, manager);
   }
 
   /**
-   * 删除文章
+   * 软删除
    */
-  @Delete(':id')
-  async removeArticle(@Param('id') id: string) {
-    return await this.articleService.removeArticle(+id);
+  @Put('/delete')
+  async removeArticle(@Body('id') id: number) {
+    return await this.articleService.removeArticle(id);
+  }
+
+  /**
+   * 硬删除
+   */
+  @Delete()
+  @Transaction()
+  async forceRemoveArticle(
+    @Body('id') id: number,
+    @TransactionManager() manger: EntityManager,
+  ) {
+    return await this.articleService.forceRemoveArticle(+id, manger);
   }
 }

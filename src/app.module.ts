@@ -52,14 +52,14 @@ import * as winston from 'winston';
       ),
       transports: [
         new DailyRotateFile({
-          filename: path.join(__dirname, '..', 'logs', `access-%DATE%.log`),
+          filename: path.join(__dirname, '..', 'logs', 'access-%DATE%.log'),
           datePattern: 'YYYY-MM-DD',
           json: true,
           level: 'info',
           format: winston.format.combine(winston.format.prettyPrint()),
         }),
         new DailyRotateFile({
-          filename: path.join(__dirname, '..', 'logs', `access-wf-%DATE%.log`),
+          filename: path.join(__dirname, '..', 'logs', 'access-wf-%DATE%.log'),
           datePattern: 'YYYY-MM-DD',
           json: false,
           level: 'error',

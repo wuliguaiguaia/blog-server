@@ -1,3 +1,4 @@
+import { genId } from './../../common/utils/genId';
 import { CategoryEntity } from 'src/entities/category.entity';
 /*
  * service 提供操作数据库服务接口
@@ -14,8 +15,10 @@ import {
   SelectQueryBuilder,
   getConnection,
   getRepository,
+  EntityManager,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ArticleContentEntity } from 'src/entities/article_content.entity';
 
 @EntityRepository(ArticleEntity)
 export class ArticleService {
@@ -33,25 +36,33 @@ export class ArticleService {
    * @param articleDto
    */
   async addArticle(articleDto: CreateArticleDto, manager) {
-    const list = await this.getArticleByCondition({
-      condition: 'title = :title', // and or
-      values: { title: articleDto.title },
-    });
-    if (list.length > 0) {
-      throw new Error('文章名不能重复');
-    }
+    const { title, categories, keywords, content } = articleDto;
 
-    const categories = [];
-    if (articleDto.categories?.length !== 0) {
-      for (const id of Object.values(articleDto.categories)) {
+    /* 分类存储 */
+    const realCategories = [];
+    if (categories?.length !== 0) {
+      for (const id of Object.values(categories)) {
         const one = await manager.findOne(CategoryEntity, {
           id: +id,
         });
-        categories.push(one);
+        realCategories.push(one);
       }
     }
-    articleDto.categories = categories;
-    return await manager.save(ArticleEntity, articleDto);
+
+    const article = new ArticleEntity();
+    article.categories = realCategories;
+    article.id = genId();
+    article.keywords = keywords;
+    article.title = title;
+
+    /* 内容存储 */
+    const articleContent = new ArticleContentEntity();
+    articleContent.content = content;
+    article.content = articleContent;
+    articleContent.id = genId(); // cascade 自动保存相关对象
+
+    const data = await manager.save(ArticleEntity, article);
+    return { id: data.id };
   }
 
   /**
@@ -72,28 +83,30 @@ export class ArticleService {
    */
   async getArticleById(query) {
     const { id } = query;
-    const categories = await getConnection()
-      .createQueryBuilder()
-      .relation(ArticleEntity, 'categories')
-      .of(id)
-      .loadMany();
     const data = await getConnection()
-      .createQueryBuilder()
-      .select('article')
-      .from(ArticleEntity, 'article')
-      .where('article.id = :id', { id: +query.id })
+      .createQueryBuilder(ArticleEntity, 'article')
+      .leftJoinAndSelect('article.categories', 'category')
+      .leftJoinAndSelect('article.content', 'content')
+      .where('article.id = :id', { id: +id })
       .getOne();
-    data.categories = categories;
-    return data;
+    const { categories, content } = data;
+    const categoriesMap = categories.map(({ id, name }) => ({ id, name }));
+    const contentStr = content.content;
+    return {
+      ...data,
+      categories: categoriesMap,
+      content: contentStr,
+    };
   }
 
   /**
-   * 根据多个类型查询文章
+   * 根据多个类型查询文章 【已废弃】
    * @param articleDto
    */
   async getArticleByCategory(articleDto) {
+    const { categories } = articleDto;
     let articles = await getRepository(CategoryEntity).findByIds(
-      articleDto.categories.map((item) => +item),
+      categories.map((item) => +item),
       {
         relations: ['articles'],
       },
@@ -126,22 +139,36 @@ export class ArticleService {
   /**
    * 更新文章
    */
-  async updateArticle(articleDto: UpdateArticleDto) {
-    const list = await this.getArticleByCondition({
-      condition: 'title = :title and id != :id',
-      values: { title: articleDto.title, id: articleDto.id },
+  async updateArticle(articleDto: UpdateArticleDto, manager) {
+    const { title, categories = [], keywords, content, id } = articleDto;
+    const article = await manager.findOne(ArticleEntity, {
+      relations: ['content'],
+      where: {
+        id: +id,
+        deleted: 0,
+      },
     });
-    if (list.length) {
-      throw new Error('文章名重复');
+
+    if (!article) {
+      throw new Error('文章不存在或已删除');
     }
 
-    return await this.queryBuilder
-      .update(ArticleEntity)
-      .set({
-        // ...articleDto,
-      })
-      .where('id = :id', { id: articleDto.id })
-      .execute();
+    /* 分类存储 */
+    const realCategories = [];
+    if (categories?.length !== 0) {
+      for (const id of Object.values(categories)) {
+        const one = await manager.findOne(CategoryEntity, {
+          id: +id,
+        });
+        realCategories.push(one);
+      }
+      article.categories = realCategories;
+    }
+    article.keywords = keywords;
+    article.title = title;
+    article.content.content = content;
+    await manager.save(ArticleEntity, article);
+    return null;
   }
 
   /**
@@ -158,36 +185,119 @@ export class ArticleService {
   /**
    * 查询文章列表
    */
-  async getArticleList(articleDto: QueryArticleListDto) {
-    const whereCondition = [];
+  async getArticleList(articleDto: QueryArticleListDto, manger: EntityManager) {
+    const { prepage, page, type = 0 } = articleDto;
+    const categories = articleDto.categories?.map((item) => +item);
+    delete articleDto.type;
+    const whereCondition = ['deleted = 0'];
     const conditionValues = {};
     for (const key in articleDto) {
-      if (!['page', 'prepage'].includes(key)) {
+      if (!['page', 'prepage', 'categories'].includes(key)) {
         whereCondition.push(`article.${key} = :${key}`);
         conditionValues[key] = articleDto[key];
       }
     }
-    if (articleDto.categories?.length) {
-      return await this.getArticleByCategory(articleDto);
+
+    if (categories?.length) {
+      const qb = await getRepository(ArticleEntity).createQueryBuilder(
+        'article',
+      );
+      switch (+type) {
+        case 0 /* 含有指定分类中的某一个 */:
+          return qb
+            .where(
+              'id IN ' +
+                qb
+                  .subQuery()
+                  .select('articleId')
+                  .from('category_articles_article', 'caa')
+                  .where('caa.categoryId IN (:category)')
+                  .getQuery(),
+            )
+            .setParameter('category', categories)
+            .andWhere(whereCondition.join(' and '), conditionValues)
+            .skip(prepage * (page - 1) || 0)
+            .take(prepage && prepage)
+            .getMany();
+        /*
+          select * from article where
+            id in (select articleId from category_articles_article
+              where categoryId in (1,2))
+            and title = '我的第一篇blog5'
+            and deleted = 0;
+        */
+
+        /*
+          连表查询
+          select distinct a.* from article a
+          left join category_articles_article caa on a.id = caa.articleId
+          where caa.categoryId in (1,2); 
+        */
+        case 1 /* 同时含有指定分类, 目前只支持两种 */:
+          const qb2 = await getRepository(ArticleEntity).createQueryBuilder();
+          const categoryWhereStr = () => {
+            const result = categories.reduce((res, item, index) => {
+              const data = `c${index + 1}.categoryId = ${item}`;
+              res.push(data);
+              return res;
+            }, []);
+            return result.join(' and ');
+          };
+
+          return qb
+            .where(
+              'id IN ' +
+                qb2
+                  .subQuery()
+                  .select('c1.articleId') // 联表查询有相同字段必须指定表名： Column 'articleId' in field list is ambiguous"
+                  .from('category_articles_article', 'c1')
+                  .innerJoin('category_articles_article', 'c2')
+                  .where('c1.articleId = c2.articleId')
+                  .where(categoryWhereStr) //'c1.categoryId = 1 and c2.categoryId = 2'
+                  .getQuery(),
+            )
+            .andWhere(whereCondition.join(' and '), conditionValues)
+            .skip(prepage * (page - 1) || 0)
+            .take(prepage && prepage)
+            .getMany();
+        /* 
+            select distinct c1.articleId from category_articles_article c1
+            left join category_articles_article c2
+            on c1.articleId = c2.articleId
+            where c1.categoryId = 1 and c2.categoryId = 2;
+          */
+      }
     }
 
-    return await getRepository(ArticleEntity)
-      .createQueryBuilder('article')
-      .where(whereCondition.join(' and '), conditionValues)
-      .orderBy('article.update_time', 'DESC') // ASC
-      .take(articleDto.prepage && articleDto.prepage)
-      .skip(articleDto.prepage * (articleDto.page - 1) || 0)
-      .getManyAndCount();
+    return await manger.find(ArticleEntity, {
+      take: prepage && prepage,
+      skip: prepage * (page - 1) || 0,
+      order: {
+        updateTime: 1,
+      },
+      where: conditionValues,
+    });
   }
 
   /**
-   * 删除指定文章
+   * 软删除指定文章
    */
   async removeArticle(id: number) {
-    return await this.queryBuilder
-      .delete()
-      .from(ArticleEntity, 'article')
+    await this.queryBuilder
+      .update(ArticleEntity)
+      .set({
+        deleted: 1,
+      })
       .where('id = :id', { id })
       .execute();
+    return null;
+  }
+
+  /**
+   * 硬删除
+   */
+  async forceRemoveArticle(id: number, manger: EntityManager) {
+    await manger.delete(ArticleEntity, id);
+    return null;
   }
 }

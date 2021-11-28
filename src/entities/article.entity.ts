@@ -9,11 +9,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToOne,
 } from 'typeorm';
 import { MysqlDataType } from './../common/constants/database/mysql';
 import { UserInfoEntity } from './user.entity';
 import { CategoryEntity } from './category.entity';
 import { BaseEntity } from './base-entity/base.entity';
+import { ArticleContentEntity } from './article_content.entity';
 
 @Entity('article')
 export class ArticleEntity extends BaseEntity {
@@ -33,11 +35,11 @@ export class ArticleEntity extends BaseEntity {
   })
   keywords: string;
 
-  @Column({
-    type: MysqlDataType.LONGTEXT,
-    comment: '内容',
+  @OneToOne(() => ArticleContentEntity, (content) => content.article, {
+    cascade: true, // 创建时同时更新到content
   })
-  content: string;
+  // @JoinColumn()
+  content: ArticleContentEntity;
 
   @Column({
     type: MysqlDataType.INT,
@@ -46,8 +48,9 @@ export class ArticleEntity extends BaseEntity {
   })
   viewCount: string;
 
-  @ManyToMany(() => CategoryEntity, (category) => category.articles)
-  @JoinTable()
+  @ManyToMany(() => CategoryEntity, (category) => category.articles, {
+    onDelete: 'CASCADE', // 同时删除关系
+  })
   categories: CategoryEntity[];
 
   @ManyToOne(() => UserInfoEntity, (user) => user.articles)
