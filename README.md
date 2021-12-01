@@ -14,7 +14,7 @@ npm run start:dev
 redis 可视化工具：redis desktop management
 
 
-postman
+postman: postman123
 workspace：lemon
 folder：blog-server
 
