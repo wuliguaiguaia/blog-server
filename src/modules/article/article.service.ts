@@ -186,8 +186,9 @@ export class ArticleService {
    * 查询文章列表
    */
   async getArticleList(articleDto: QueryArticleListDto, manger: EntityManager) {
-    const { prepage, page, type = 0 } = articleDto;
+    const { prepage, page, type = '' } = articleDto;
     const categories = articleDto.categories?.map((item) => +item);
+
     delete articleDto.type;
     const whereCondition = ['deleted = 0'];
     const conditionValues = {};
@@ -203,8 +204,9 @@ export class ArticleService {
         'article',
       );
       switch (+type) {
-        case 0 /* 含有指定分类中的某一个 */:
-          return qb
+        case 0:
+        case 1 /* 含有指定分类中的某一个 */:
+          return await qb
             .where(
               'id IN ' +
                 qb
@@ -233,7 +235,7 @@ export class ArticleService {
           left join category_articles_article caa on a.id = caa.articleId
           where caa.categoryId in (1,2); 
         */
-        case 1 /* 同时含有指定分类, 目前只支持两种 */:
+        case 2 /* 同时含有指定分类, 目前只支持两种 */:
           const qb2 = await getRepository(ArticleEntity).createQueryBuilder();
           const categoryWhereStr = () => {
             const result = categories.reduce((res, item, index) => {
@@ -244,7 +246,7 @@ export class ArticleService {
             return result.join(' and ');
           };
 
-          return qb
+          return await qb
             .where(
               'id IN ' +
                 qb2
@@ -253,7 +255,7 @@ export class ArticleService {
                   .from('category_articles_article', 'c1')
                   .innerJoin('category_articles_article', 'c2')
                   .where('c1.articleId = c2.articleId')
-                  .where(categoryWhereStr) //'c1.categoryId = 1 and c2.categoryId = 2'
+                  .andWhere(categoryWhereStr()) //'c1.categoryId = 1 and c2.categoryId = 2'
                   .getQuery(),
             )
             .andWhere(whereCondition.join(' and '), conditionValues)

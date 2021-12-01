@@ -28,7 +28,7 @@ export class QueryArticleListDto {
 
   categories: string[];
 
-  type: 0 | 1; // categories 查询类型 0: and 1: or
+  type: 0 | 1 | 2; // categories 查询类型 1: and 2: or
 }
 
 export class QueryArticleDto {
