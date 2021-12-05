@@ -26,9 +26,11 @@ export class QueryArticleListDto {
 
   prepage: number;
 
-  categories: string[];
+  categories?: string[];
 
-  type: 0 | 1 | 2; // categories 查询类型 1: and 2: or
+  type?: 0 | 1 | 2; // categories 查询类型 1: and 2: or
+
+  words?: string;
 }
 
 export class QueryArticleDto {

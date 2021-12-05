@@ -33,6 +33,17 @@ export class ArticleController {
   }
 
   /**
+   * 模糊搜索
+   */
+  @Get('/search')
+  async getArticleListFromSearch(@Query() articleDto: QueryArticleListDto) {
+    const [list, total] = await this.articleService.getArticleListFromSearch(
+      articleDto,
+    );
+    return { list, total };
+  }
+
+  /**
    * 获取文章
    */
   @Get()

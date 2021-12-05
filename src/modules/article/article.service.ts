@@ -1,9 +1,6 @@
-import { genId } from './../../common/utils/genId';
-import { CategoryEntity } from 'src/entities/category.entity';
 /*
  * service 提供操作数据库服务接口
  */
-import { ArticleEntity } from './../../entities/article.entity';
 import {
   CreateArticleDto,
   UpdateArticleDto,
@@ -18,8 +15,11 @@ import {
   EntityManager,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ArticleEntity } from 'src/entities/article.entity';
 import { ArticleContentEntity } from 'src/entities/article_content.entity';
-
+import { CategoryEntity } from 'src/entities/category.entity';
+import getSearchRangText from 'src/common/utils/getSearchRangeText';
+import { genId } from 'src/common/utils/genId';
 @EntityRepository(ArticleEntity)
 export class ArticleService {
   private readonly queryBuilder: SelectQueryBuilder<any> = null;
@@ -183,6 +183,69 @@ export class ArticleService {
   }
 
   /**
+   * 模糊搜索 title
+   */
+  async getArticleListFromSearch(articleDto: QueryArticleListDto) {
+    const { prepage, page, words = '' } = articleDto;
+    if (!words) return [];
+
+    const [list, total] = await getRepository(ArticleEntity)
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.content', 'acontent')
+      .select([
+        'article.id',
+        'article.title',
+        'article.update_time',
+        'acontent.content',
+      ])
+      .where(
+        `article.title like "%${words}%" or acontent.content like "%${words}%" and article.deleted = 0`,
+      )
+      .orderBy(`article.update_time`, 'DESC')
+      .offset(prepage * (page - 1) || 0)
+      .limit(prepage && +prepage)
+      .getManyAndCount();
+
+    /* 获取目录 map */
+    const categoryIdRawMap = await getRepository(CategoryEntity)
+      .createQueryBuilder('category')
+      .select(['id', 'name'])
+      .getRawMany();
+    const categoryIdMap = categoryIdRawMap.reduce((res, { id, name }) => {
+      res[id] = { id, name };
+      return res;
+    }, {});
+
+    /* 获取关系 map */
+    const ids = list.map((item) => item.id);
+    const cateToArti = await getRepository('category_articles_article')
+      .createQueryBuilder('caa')
+      .select(['categoryId', 'articleId'])
+      .where(`articleId in (${ids.join(',')})`)
+      .getRawMany();
+    const idsMap = cateToArti.reduce((res, item) => {
+      const { categoryId, articleId } = item;
+      if (!res[articleId]) {
+        res[articleId] = [categoryIdMap[categoryId]];
+      } else {
+        res[articleId].push(categoryIdMap[categoryId]);
+      }
+      return res;
+    }, {});
+
+    list.forEach((item) => {
+      const { content, id } = item;
+      item.categories = idsMap[id];
+      const contentSlice = getSearchRangText(content.content, words);
+      delete item.content;
+      item.contentSlice = contentSlice;
+      console.log(contentSlice);
+    });
+
+    return [list, total];
+  }
+
+  /**
    * 查询文章列表
    */
   async getArticleList(articleDto: QueryArticleListDto, manger: EntityManager) {
@@ -259,6 +322,9 @@ export class ArticleService {
                   .getQuery(),
             )
             .andWhere(whereCondition.join(' and '), conditionValues)
+            .orderBy({
+              updateTime: 'DESC',
+            })
             .skip(prepage * (page - 1) || 0)
             .take(prepage && prepage)
             .getMany();

@@ -5,11 +5,7 @@
 import { ApiErrorCode } from './../../common/exceptions/api.code.enum';
 import { ApiException } from './../../common/exceptions/api.exception';
 import { CategoryEntity } from './../../entities/category.entity';
-import {
-  CreateCategoryDto,
-  UpdateCategoryDto,
-  QueryCategoryDto,
-} from './dto/category.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import {
   EntityRepository,
   Repository,

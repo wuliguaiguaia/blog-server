@@ -57,4 +57,6 @@ export class ArticleEntity extends BaseEntity {
   @JoinColumn()
   user: UserInfoEntity;
   /* 在多对一/一对多的关系中，拥有方总是多对一的 */
+
+  contentSlice: string;
 }
