@@ -195,13 +195,14 @@ export class ArticleService {
       .select([
         'article.id',
         'article.title',
-        'article.update_time',
+        'article.updateTime',
+        'article.createTime',
         'acontent.content',
       ])
       .where(
         `article.title like "%${words}%" or acontent.content like "%${words}%" and article.deleted = 0`,
       )
-      .orderBy(`article.update_time`, 'DESC')
+      .orderBy(`article.updateTime`, 'DESC')
       .offset(prepage * (page - 1) || 0)
       .limit(prepage && +prepage)
       .getManyAndCount();
@@ -239,7 +240,6 @@ export class ArticleService {
       const contentSlice = getSearchRangText(content.content, words);
       delete item.content;
       item.contentSlice = contentSlice;
-      console.log(contentSlice);
     });
 
     return [list, total];
@@ -250,9 +250,10 @@ export class ArticleService {
    */
   async getArticleList(articleDto: QueryArticleListDto, manger: EntityManager) {
     const { prepage, page, type = '' } = articleDto;
-    const categories = articleDto.categories?.map((item) => +item);
-
+    const cates = articleDto.categories || [];
+    const categories = cates?.map((item) => +item);
     delete articleDto.type;
+
     const whereCondition = ['deleted = 0'];
     const conditionValues = {};
     for (const key in articleDto) {
@@ -322,9 +323,7 @@ export class ArticleService {
                   .getQuery(),
             )
             .andWhere(whereCondition.join(' and '), conditionValues)
-            .orderBy({
-              updateTime: 'DESC',
-            })
+            .orderBy(`article.updateTime`, 'DESC')
             .skip(prepage * (page - 1) || 0)
             .take(prepage && prepage)
             .getMany();
