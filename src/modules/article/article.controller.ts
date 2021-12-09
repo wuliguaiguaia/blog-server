@@ -37,10 +37,10 @@ export class ArticleController {
    */
   @Get('/search')
   async getArticleListFromSearch(@Query() articleDto: QueryArticleListDto) {
-    const [list, total] = await this.articleService.getArticleListFromSearch(
+    const [list, total, max_score] = await this.articleService.searchArticles(
       articleDto,
     );
-    return { list, total };
+    return { list, total, max_score };
   }
 
   /**

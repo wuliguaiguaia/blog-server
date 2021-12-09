@@ -20,6 +20,8 @@ import { ArticleContentEntity } from 'src/entities/article_content.entity';
 import { CategoryEntity } from 'src/entities/category.entity';
 import getSearchRangText from 'src/common/utils/getSearchRangeText';
 import { genId } from 'src/common/utils/genId';
+import * as es from './../../common/plugins/es.plugin';
+
 @EntityRepository(ArticleEntity)
 export class ArticleService {
   private readonly queryBuilder: SelectQueryBuilder<any> = null;
@@ -61,7 +63,12 @@ export class ArticleService {
     article.content = articleContent;
     articleContent.id = genId(); // cascade 自动保存相关对象
 
+    /* mysql save */
     const data = await manager.save(ArticleEntity, article);
+
+    /* es save */
+    await es.insert(data);
+
     return { id: data.id };
   }
 
@@ -167,8 +174,15 @@ export class ArticleService {
     article.keywords = keywords;
     article.title = title;
     article.content.content = content;
+
+    /* mysql save */
     await manager.save(ArticleEntity, article);
-    return null;
+
+    /* es save */
+    const x = await es.update(article);
+    console.log(x);
+
+    return article.id;
   }
 
   /**
@@ -183,7 +197,7 @@ export class ArticleService {
   }
 
   /**
-   * 模糊搜索 title
+   * 模糊搜索1.0 mysql 原生查询
    */
   async getArticleListFromSearch(articleDto: QueryArticleListDto) {
     const { prepage, page, words = '' } = articleDto;
@@ -243,6 +257,28 @@ export class ArticleService {
     });
 
     return [list, total];
+  }
+
+  /**
+   * 模糊搜索2.0 es
+   */
+
+  async searchArticles(articleDto: QueryArticleListDto) {
+    const { prepage = 10, page = 1, words = '' } = articleDto;
+    if (!words) return [];
+    const response = await es.search({
+      from: prepage * (page - 1),
+      size: prepage,
+      words,
+      sort: [{ updateTime: { order: 'DESC' } }],
+    });
+    console.log(response.body);
+
+    const {
+      hits: { hits, total, max_score },
+    } = response.body;
+    // return [list, total];
+    return [hits, total, max_score];
   }
 
   /**
@@ -357,6 +393,7 @@ export class ArticleService {
       })
       .where('id = :id', { id })
       .execute();
+    await es.update({ id, deleted: 1 });
     return null;
   }
 
@@ -365,6 +402,7 @@ export class ArticleService {
    */
   async forceRemoveArticle(id: number, manger: EntityManager) {
     await manger.delete(ArticleEntity, id);
+    await es.remove({ id });
     return null;
   }
 }
