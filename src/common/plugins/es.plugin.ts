@@ -39,46 +39,13 @@ const get = async ({ id }) => {
     type,
   });
 };
-const search = async ({ from, size, words, sort }) => {
+const search = async ({ from, size, body /* sort */ }) => {
   return await client.search({
     index,
     type,
     from,
     size,
-    body: {
-      sort,
-      query: {
-        bool: {
-          must: { match: { deleted: 0 } },
-          should: [
-            {
-              match: {
-                title: words,
-              },
-            },
-            // {
-            //   match: {
-            //     'content?.content': words,
-            //   },
-            // },
-          ],
-        },
-        // match: {
-        //   title: {
-        //     query: words,
-        //     // operator: 'and' /* 提高精度 */,
-        //     minimum_should_match: '30%' /* 控制精度 */,
-        //   },
-        //   // content: words,
-        // },
-      },
-      highlight: {
-        fields: {
-          // title: { type: 'plain' },
-        },
-      },
-      // 'content.content': 'words',
-    },
+    body,
   });
 };
 

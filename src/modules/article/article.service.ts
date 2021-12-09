@@ -269,8 +269,51 @@ export class ArticleService {
     const response = await es.search({
       from: prepage * (page - 1),
       size: prepage,
-      words,
-      sort: [{ updateTime: { order: 'DESC' } }],
+      body: {
+        // sort,
+        query: {
+          // wildcard: {
+          //   title: words,
+          // },
+          bool: {
+            must: [
+              {
+                match: { deleted: 0 },
+              },
+              {
+                bool: {
+                  should: [
+                    {
+                      match: {
+                        title: words,
+                      },
+                    },
+                    {
+                      match: {
+                        'content.content': words,
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          // match: {
+          //   title: {
+          //     query: words,
+          //     // operator: 'and' /* 提高精度 */,
+          //     minimum_should_match: '30%' /* 控制精度 */,
+          //   },
+          //   // content: words,
+          // },
+        },
+        highlight: {
+          fields: {
+            title: { type: 'plain' },
+          },
+        },
+      },
+      // sort: [{ updateTime: { order: 'DESC' } }],
     });
     console.log(response.body);
 
@@ -306,6 +349,11 @@ export class ArticleService {
       switch (+type) {
         case 0:
         case 1 /* 含有指定分类中的某一个 */:
+          const data = await es.search({
+            from: prepage * (page - 1) || 0,
+            size: prepage && prepage,
+            body: {},
+          });
           return await qb
             .where(
               'id IN ' +
