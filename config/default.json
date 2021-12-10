@@ -9,8 +9,12 @@
     "host": "localhost",
     "port": "6379"
   },
+  "elasticSearch": {
+    "host": "http://localhost",
+    "port": "9200"
+  },
   "log": {
-    "prefix":"柠檬树"
+    "prefix": "柠檬树"
   },
   "cls": {
     "namespace": "lemon"

@@ -21,6 +21,7 @@ import { CategoryEntity } from 'src/entities/category.entity';
 import getSearchRangText from 'src/common/utils/getSearchRangeText';
 import { genId } from 'src/common/utils/genId';
 import * as es from './../../common/plugins/es.plugin';
+import { ApiException } from './../../common/exceptions/api.exception';
 
 @EntityRepository(ArticleEntity)
 export class ArticleService {
@@ -85,7 +86,37 @@ export class ArticleService {
   }
 
   /**
-   * 获取单个文章详情
+   * 获取单个文章详情 2.0 es
+   * @param query.id 文章id
+   */
+  async getArticleByIdES(query) {
+    const { id } = query;
+    const { body } = await es.search({
+      body: {
+        query: {
+          /* constant_score 将 term 查询转化成为过滤器 */
+          constant_score: {
+            /* 精确值查找 */
+            filter: {
+              term: {
+                id,
+              },
+            },
+          },
+        },
+      },
+    });
+    const {
+      hits: { total, hits },
+    } = body;
+    if (total.value === 0) {
+      throw new ApiException(404, '文章不存在或已删除');
+    }
+    return hits[0];
+  }
+
+  /**
+   * 获取单个文章详情 1.0
    * @param query.id 文章id
    */
   async getArticleById(query) {
@@ -157,7 +188,7 @@ export class ArticleService {
     });
 
     if (!article) {
-      throw new Error('文章不存在或已删除');
+      throw new ApiException(404, '文章不存在或已删除');
     }
 
     /* 分类存储 */
@@ -262,19 +293,14 @@ export class ArticleService {
   /**
    * 模糊搜索2.0 es
    */
-
-  async searchArticles(articleDto: QueryArticleListDto) {
+  async getArticleListFromSearchES(articleDto: QueryArticleListDto) {
     const { prepage = 10, page = 1, words = '' } = articleDto;
     if (!words) return [];
     const response = await es.search({
       from: prepage * (page - 1),
       size: prepage,
       body: {
-        // sort,
         query: {
-          // wildcard: {
-          //   title: words,
-          // },
           bool: {
             must: [
               {
@@ -298,34 +324,73 @@ export class ArticleService {
               },
             ],
           },
-          // match: {
-          //   title: {
-          //     query: words,
-          //     // operator: 'and' /* 提高精度 */,
-          //     minimum_should_match: '30%' /* 控制精度 */,
-          //   },
-          //   // content: words,
-          // },
         },
         highlight: {
           fields: {
-            title: { type: 'plain' },
+            title: {},
+            'content.content': {},
           },
         },
       },
       // sort: [{ updateTime: { order: 'DESC' } }],
     });
-    console.log(response.body);
-
     const {
+      took,
       hits: { hits, total, max_score },
     } = response.body;
-    // return [list, total];
-    return [hits, total, max_score];
+    return [took, hits, total, max_score];
   }
 
   /**
-   * 查询文章列表
+   * 查询文章列表 2.0 es
+   */
+  async getArticleListES(articleDto: QueryArticleListDto, manger) {
+    const { prepage, page, type = 0, categories = [] } = articleDto;
+    const qbody: any = {
+      sort: [
+        {
+          updateTime: { order: 'DESC' },
+        },
+      ],
+      query: {
+        bool: {
+          must: [
+            {
+              match: { deleted: 0 },
+            },
+          ],
+        },
+      },
+    };
+    if (categories?.length !== 0) {
+      const matches = categories.reduce((res, item) => {
+        res.push({
+          match: {
+            'categories.id': item,
+          },
+        });
+        return res;
+      }, []);
+      qbody.query.bool.must.push({
+        bool: {
+          [+type === 2 ? 'must' : 'should']: matches,
+        },
+      });
+    }
+    const { body } = await es.search({
+      from: prepage * (page - 1) || 0,
+      size: prepage && prepage,
+      body: qbody,
+    });
+    const {
+      took,
+      hits: { total, hits },
+    } = body;
+    return [took, hits, total];
+  }
+
+  /**
+   * 查询文章列表 1.0
    */
   async getArticleList(articleDto: QueryArticleListDto, manger: EntityManager) {
     const { prepage, page, type = '' } = articleDto;
@@ -349,11 +414,6 @@ export class ArticleService {
       switch (+type) {
         case 0:
         case 1 /* 含有指定分类中的某一个 */:
-          const data = await es.search({
-            from: prepage * (page - 1) || 0,
-            size: prepage && prepage,
-            body: {},
-          });
           return await qb
             .where(
               'id IN ' +

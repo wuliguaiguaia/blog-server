@@ -14,7 +14,7 @@ import {
   getRepository,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-
+import * as es from '../../common/plugins/es.plugin';
 @EntityRepository(CategoryEntity)
 export class CategoryService {
   private readonly queryBuilder: SelectQueryBuilder<any> = null;
@@ -88,7 +88,7 @@ export class CategoryService {
   }
 
   /**
-   * 查询分类列表
+   * 查询分类列表及其包含数量 1.0
    */
   async getCategoryList() {
     const response = await getRepository(CategoryEntity).find({
@@ -102,6 +102,30 @@ export class CategoryService {
       }),
       response.length,
     ];
+  }
+
+  /**
+   * 查询分类列表及其包含数量 2.0 es
+   * 需要做速度测试：took：花费了多少秒
+   */
+
+  async getCategoryListES() {
+    const { body } = await es.search({
+      from: 0,
+      size: 100,
+      body: {
+        aggs: {
+          categories: {
+            terms: { field: 'categories.id' },
+          },
+        },
+      },
+    });
+    // 得到针对某个分类id的个数
+    const {
+      categories: { buckets },
+    } = body.aggregations;
+    return [buckets, 10];
   }
 
   /**

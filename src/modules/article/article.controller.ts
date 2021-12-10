@@ -29,7 +29,17 @@ export class ArticleController {
     @Query() articleDto: QueryArticleListDto,
     @TransactionManager() manger: EntityManager,
   ) {
-    return await this.articleService.getArticleList(articleDto, manger);
+    const [esTookTime, list, total] =
+      await this.articleService.getArticleListES(articleDto, manger);
+    return {
+      esTookTime,
+      total: total.value,
+      list: list.map(({ _source, _source: { categories, content } }) => {
+        _source.categories = categories.map((item) => item.id);
+        _source.content = content.content;
+        return _source;
+      }),
+    };
   }
 
   /**
@@ -37,10 +47,18 @@ export class ArticleController {
    */
   @Get('/search')
   async getArticleListFromSearch(@Query() articleDto: QueryArticleListDto) {
-    const [list, total, max_score] = await this.articleService.searchArticles(
-      articleDto,
-    );
-    return { list, total, max_score };
+    const [esTookTime, list, total, max_score] =
+      await this.articleService.getArticleListFromSearchES(articleDto);
+    return {
+      esTookTime,
+      total: total.value,
+      max_score,
+      list: list.map((item) => {
+        delete item._index;
+        delete item._type;
+        return item;
+      }),
+    };
   }
 
   /**
@@ -48,7 +66,14 @@ export class ArticleController {
    */
   @Get()
   async getArticle(@Query() articleDto: QueryArticleDto) {
-    return await this.articleService.getArticleById(articleDto);
+    const {
+      _source,
+      _source: { categories, content },
+    } = await this.articleService.getArticleByIdES(articleDto);
+
+    _source.categories = categories.map((item) => item.id);
+    _source.content = content.content;
+    return _source;
   }
 
   /**
@@ -65,6 +90,7 @@ export class ArticleController {
   ) {
     return await this.articleService.addArticle(articleDto, manager);
   }
+
   /**
    * 更新文章
    */

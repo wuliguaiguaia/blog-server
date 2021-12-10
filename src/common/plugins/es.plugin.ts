@@ -1,6 +1,11 @@
 import { Client } from '@elastic/elasticsearch';
+import * as config from 'config';
 
-const client = new Client({ node: 'http://localhost:9200' });
+const client = new Client({
+  node: `${config.get('elasticSearch.host')}:${config.get(
+    'elasticSearch.port',
+  )}`,
+});
 
 const index = 'articles3';
 const type = 'alias_doc';
@@ -39,7 +44,12 @@ const get = async ({ id }) => {
     type,
   });
 };
-const search = async ({ from, size, body /* sort */ }) => {
+interface IPropSearch {
+  from?: number;
+  size?: number;
+  body: any;
+}
+const search = async ({ from, size, body }: IPropSearch) => {
   return await client.search({
     index,
     type,
