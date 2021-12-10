@@ -56,6 +56,18 @@ export class ArticleController {
       list: list.map((item) => {
         delete item._index;
         delete item._type;
+        delete item._source.content;
+        item._source.categories = item._source.categories.map((item) => {
+          return {
+            id: item.id,
+            name: item.name,
+          };
+        });
+
+        item.highlight.title = item.highlight.title[0];
+        item.highlight.content =
+          item.highlight['content.content'].join('...') + '...';
+        delete item.highlight['content.content'];
         return item;
       }),
     };
@@ -71,7 +83,12 @@ export class ArticleController {
       _source: { categories, content },
     } = await this.articleService.getArticleByIdES(articleDto);
 
-    _source.categories = categories.map((item) => item.id);
+    _source.categories = categories.map((item) => {
+      return {
+        id: item.id,
+        name: item.name,
+      };
+    });
     _source.content = content.content;
     return _source;
   }

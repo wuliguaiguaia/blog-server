@@ -326,9 +326,17 @@ export class ArticleService {
           },
         },
         highlight: {
+          pre_tags: ['<span class="highlight">'],
+          post_tags: ['</span>'],
           fields: {
-            title: {},
-            'content.content': {},
+            title: {
+              fragment_size: 50,
+              no_match_size: 50,
+            },
+            'content.content': {
+              fragment_size: 100,
+              no_match_size: 100,
+            },
           },
         },
       },
@@ -362,6 +370,7 @@ export class ArticleService {
         },
       },
     };
+
     if (categories?.length !== 0) {
       const matches = categories.reduce((res, item) => {
         res.push({
