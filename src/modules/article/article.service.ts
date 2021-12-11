@@ -210,8 +210,7 @@ export class ArticleService {
     await manager.save(ArticleEntity, article);
 
     /* es save */
-    const x = await es.update(article);
-    console.log(x);
+    await es.update(article);
 
     return article.id;
   }
