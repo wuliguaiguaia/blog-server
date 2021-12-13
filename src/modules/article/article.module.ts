@@ -1,3 +1,4 @@
+import { CommitService } from './../commit/commit.service';
 import { UserModule } from './../user/user.module';
 import { ArticleEntity } from './../../entities/article.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,6 +9,6 @@ import { ArticleService } from './article.service';
 @Module({
   imports: [TypeOrmModule.forFeature([ArticleEntity]), UserModule],
   controllers: [ArticleController],
-  providers: [ArticleService],
+  providers: [ArticleService, CommitService],
 })
 export class ArticleModule {}

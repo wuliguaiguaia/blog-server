@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 import { ArticleService } from './article.service';
+import { CommitService } from './../commit/commit.service';
 import {
   CreateArticleDto,
   UpdateArticleDto,
@@ -18,7 +19,10 @@ import {
 
 @Controller('article')
 export class ArticleController {
-  constructor(private readonly articleService: ArticleService) {}
+  constructor(
+    private readonly articleService: ArticleService,
+    private readonly commitService: CommitService,
+  ) {}
 
   /**
    * 获取文章列表
@@ -105,6 +109,7 @@ export class ArticleController {
     @Body() articleDto: CreateArticleDto,
     @TransactionManager() manager: EntityManager,
   ) {
+    await this.commitService.addCommit(manager);
     return await this.articleService.addArticle(articleDto, manager);
   }
 
@@ -117,6 +122,7 @@ export class ArticleController {
     @Body() articleDto: UpdateArticleDto,
     @TransactionManager() manager: EntityManager,
   ) {
+    await this.commitService.addCommit(manager);
     return await this.articleService.updateArticle(articleDto, manager);
   }
 
@@ -124,8 +130,13 @@ export class ArticleController {
    * 软删除
    */
   @Put('/delete')
-  async removeArticle(@Body('id') id: number) {
-    return await this.articleService.removeArticle(id);
+  @Transaction()
+  async removeArticle(
+    @Body('id') id: number,
+    @TransactionManager() manager: EntityManager,
+  ) {
+    await this.commitService.addCommit(manager);
+    return await this.articleService.removeArticle(id, manager);
   }
 
   /**
@@ -135,8 +146,9 @@ export class ArticleController {
   @Transaction()
   async forceRemoveArticle(
     @Body('id') id: number,
-    @TransactionManager() manger: EntityManager,
+    @TransactionManager() manager: EntityManager,
   ) {
-    return await this.articleService.forceRemoveArticle(+id, manger);
+    await this.commitService.addCommit(manager);
+    return await this.articleService.forceRemoveArticle(+id, manager);
   }
 }

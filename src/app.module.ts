@@ -6,6 +6,7 @@ import {
 import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { ArticleModule } from './modules/article/article.module';
+import { CommitModule } from './modules/commit/commit.module';
 import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
@@ -72,6 +73,7 @@ import * as winston from 'winston';
     UserModule,
     ArticleModule,
     CategoryModule,
+    CommitModule,
     AuthModule,
   ],
   controllers: [AppController],

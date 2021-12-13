@@ -1,3 +1,4 @@
+import { CommitService } from './../commit/commit.service';
 /*
  * service 提供操作数据库服务接口
  */
@@ -16,6 +17,7 @@ import {
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from 'src/entities/article.entity';
+import { CommitEntity } from './../../entities/commit.entity';
 import { ArticleContentEntity } from 'src/entities/article_content.entity';
 import { CategoryEntity } from 'src/entities/category.entity';
 import getSearchRangText from 'src/common/utils/getSearchRangeText';
@@ -38,7 +40,7 @@ export class ArticleService {
    * 增加文章
    * @param articleDto
    */
-  async addArticle(articleDto: CreateArticleDto, manager) {
+  async addArticle(articleDto: CreateArticleDto, manager: EntityManager) {
     const { title, categories, keywords, content } = articleDto;
 
     /* 分类存储 */
@@ -69,7 +71,6 @@ export class ArticleService {
 
     /* es save */
     await es.insert(data);
-
     return { id: data.id };
   }
 
@@ -501,14 +502,8 @@ export class ArticleService {
   /**
    * 软删除指定文章
    */
-  async removeArticle(id: number) {
-    await this.queryBuilder
-      .update(ArticleEntity)
-      .set({
-        deleted: 1,
-      })
-      .where('id = :id', { id })
-      .execute();
+  async removeArticle(id: number, manager: EntityManager) {
+    await manager.update(ArticleEntity, id, { deleted: 1 });
     await es.update({ id, deleted: 1 });
     return null;
   }
@@ -516,8 +511,8 @@ export class ArticleService {
   /**
    * 硬删除
    */
-  async forceRemoveArticle(id: number, manger: EntityManager) {
-    await manger.delete(ArticleEntity, id);
+  async forceRemoveArticle(id: number, manager: EntityManager) {
+    await manager.delete(ArticleEntity, id);
     await es.remove({ id });
     return null;
   }
