@@ -353,7 +353,7 @@ export class ArticleService {
    * 查询文章列表 2.0 es
    */
   async getArticleListES(articleDto: QueryArticleListDto, manger) {
-    const { prepage, page, type = 0, categories = [] } = articleDto;
+    const { prepage, page, type = 0, categories = [], sorter } = articleDto;
     const qbody: any = {
       sort: [
         {
@@ -370,6 +370,12 @@ export class ArticleService {
         },
       },
     };
+    console.log(sorter, '=====');
+
+    if (JSON.parse(sorter) && Object.keys(JSON.parse(sorter)).length) {
+      console.log(Object.keys(sorter).length, '=====');
+      qbody.sort = [JSON.parse(sorter)];
+    }
 
     if (categories?.length !== 0) {
       const matches = categories.reduce((res, item) => {

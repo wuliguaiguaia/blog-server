@@ -31,6 +31,8 @@ export class QueryArticleListDto {
   type?: 0 | 1 | 2; // categories 查询类型 1: and 2: or
 
   words?: string;
+
+  sorter?: any;
 }
 
 export class QueryArticleDto {

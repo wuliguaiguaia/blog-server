@@ -43,7 +43,10 @@ export class CommitService {
   /**
    * 查询commit列表
    */
-  async getCommitList() {
-    return getRepository(CommitEntity).createQueryBuilder('commit').getMany();
+  async getCommitList({ year }) {
+    return getRepository(CommitEntity)
+      .createQueryBuilder('commit')
+      .where(`commit.date like "%${year}%"`)
+      .getMany();
   }
 }

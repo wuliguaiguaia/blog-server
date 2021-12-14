@@ -39,8 +39,13 @@ export class ArticleController {
       esTookTime,
       total: total.value,
       list: list.map(({ _source, _source: { categories, content } }) => {
-        _source.categories = categories.map((item) => item.id);
-        _source.content = content.content;
+        _source.categories = categories.map((item) => {
+          return {
+            id: item.id,
+            name: item.name,
+          };
+        });
+        _source.content = content.content?.substr(0, 350);
         return _source;
       }),
     };

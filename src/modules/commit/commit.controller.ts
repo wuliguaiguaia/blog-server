@@ -1,5 +1,5 @@
 import { CommitService } from './commit.service';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 @Controller('commit')
 export class CommitController {
@@ -9,7 +9,7 @@ export class CommitController {
    * 获取commit列表
    */
   @Get()
-  async getCommitList() {
-    return await this.commitService.getCommitList();
+  async getCommitList(@Query() commitDto) {
+    return await this.commitService.getCommitList(commitDto);
   }
 }

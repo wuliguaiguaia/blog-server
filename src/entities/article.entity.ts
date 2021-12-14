@@ -48,6 +48,13 @@ export class ArticleEntity extends BaseEntity {
   })
   viewCount: string;
 
+  @Column({
+    type: MysqlDataType.TINYINT,
+    comment: '是否发布',
+    default: 0,
+  })
+  published: number;
+
   @ManyToMany(() => CategoryEntity, (category) => category.articles, {
     onDelete: 'CASCADE', // 同时删除关系
   })
