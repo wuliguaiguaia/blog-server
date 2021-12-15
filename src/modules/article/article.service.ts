@@ -424,6 +424,7 @@ export class ArticleService {
         .createQueryBuilder('article')
         .leftJoinAndSelect('article.categories', 'category')
         .leftJoinAndSelect('article.content', 'content')
+        .where('article.deleted = 0')
         .skip(prepage * (page - 1) || 0)
         .take(prepage && prepage)
         .orderBy({ 'article.updateTime': 'DESC' })
