@@ -20,7 +20,7 @@ export class CommitService {
       },
     });
 
-    const curCount = commit.count;
+    const curCount = commit?.count || 0;
     if (commit) {
       console.log(commit.id);
       await manager.update(CommitEntity, commit.id, {

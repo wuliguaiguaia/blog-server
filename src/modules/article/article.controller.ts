@@ -33,21 +33,12 @@ export class ArticleController {
     @Query() articleDto: QueryArticleListDto,
     @TransactionManager() manger: EntityManager,
   ) {
-    const [esTookTime, list, total] =
+    const [total, list, esTookTime = 0] =
       await this.articleService.getArticleListES(articleDto, manger);
     return {
       esTookTime,
-      total: total.value,
-      list: list.map(({ _source, _source: { categories, content } }) => {
-        _source.categories = categories.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-          };
-        });
-        _source.content = content.content?.substr(0, 350);
-        return _source;
-      }),
+      total,
+      list,
     };
   }
 
@@ -155,5 +146,18 @@ export class ArticleController {
   ) {
     await this.commitService.addCommit(manager);
     return await this.articleService.forceRemoveArticle(+id, manager);
+  }
+
+  /**
+   * 发表文章
+   */
+  @Put('/publish')
+  @Transaction()
+  async publishArticle(
+    @Body('id') id: number,
+    @TransactionManager() manager: EntityManager,
+  ) {
+    await this.commitService.addCommit(manager);
+    return await this.articleService.publishArticle(+id, manager);
   }
 }

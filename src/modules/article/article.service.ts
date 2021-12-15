@@ -294,53 +294,89 @@ export class ArticleService {
    * 模糊搜索2.0 es
    */
   async getArticleListFromSearchES(articleDto: QueryArticleListDto) {
-    const { prepage = 10, page = 1, words = '' } = articleDto;
-    if (!words) return [];
-    const response = await es.search({
-      from: prepage * (page - 1),
-      size: prepage,
-      body: {
-        query: {
-          bool: {
-            must: [
-              {
-                match: { deleted: 0 },
-              },
-              {
-                bool: {
-                  should: [
-                    {
-                      match: {
-                        title: words,
-                      },
-                    },
-                    {
-                      match: {
-                        'content.content': words,
-                      },
-                    },
-                  ],
-                },
-              },
-            ],
-          },
+    const {
+      prepage = 10,
+      page = 1,
+      words = '',
+      columns = ['title', 'content.content'],
+      categories = [],
+      sorter = '',
+      published = null,
+    } = articleDto;
+    if (!words) return [0, [], { value: 0 }, 0];
+    const qbody: any = {
+      query: {
+        bool: {
+          must: [
+            {
+              match: { deleted: 0 },
+            },
+          ],
         },
-        highlight: {
-          pre_tags: ['<span class="highlight">'],
-          post_tags: ['</span>'],
-          fields: {
-            title: {
-              fragment_size: 50,
-              no_match_size: 50,
-            },
-            'content.content': {
-              fragment_size: 100,
-              no_match_size: 100,
-            },
+      },
+      highlight: {
+        pre_tags: ['<span class="highlight">'],
+        post_tags: ['</span>'],
+        fields: {
+          title: {
+            fragment_size: 50,
+            no_match_size: 50,
+          },
+          'content.content': {
+            fragment_size: 100,
+            no_match_size: 100,
           },
         },
       },
-      // sort: [{ updateTime: { order: 'DESC' } }],
+    };
+    if (published !== null) {
+      qbody.query.bool.must.push({
+        match: {
+          published: +published,
+        },
+      });
+    }
+    if (columns?.length) {
+      const shoulds = columns.reduce((res, item) => {
+        res.push({
+          match: {
+            [item]: words,
+          },
+        });
+        return res;
+      }, []);
+      qbody.query.bool.must.push({
+        bool: {
+          should: shoulds,
+        },
+      });
+    }
+    if (
+      sorter &&
+      JSON.parse(sorter) &&
+      Object.keys(JSON.parse(sorter)).length
+    ) {
+      qbody.sort = [JSON.parse(sorter)];
+    }
+    if (categories?.length !== 0) {
+      const matches = categories.reduce((res, item) => {
+        res.push({
+          match: {
+            'categories.id': item,
+          },
+        });
+        return res;
+      }, []);
+      qbody.query.bool.must.push({
+        bool: {
+          should: matches,
+        },
+      });
+    }
+    const response = await es.search({
+      from: prepage * (page - 1),
+      size: prepage,
+      body: qbody,
     });
     const {
       took,
@@ -353,7 +389,14 @@ export class ArticleService {
    * 查询文章列表 2.0 es
    */
   async getArticleListES(articleDto: QueryArticleListDto, manger) {
-    const { prepage, page, type = 0, categories = [], sorter } = articleDto;
+    const {
+      prepage,
+      page,
+      type = 0,
+      categories = [],
+      sorter = '',
+      published = null,
+    } = articleDto;
     const qbody: any = {
       sort: [
         {
@@ -370,11 +413,51 @@ export class ArticleService {
         },
       },
     };
-    console.log(sorter, '=====');
 
-    if (JSON.parse(sorter) && Object.keys(JSON.parse(sorter)).length) {
-      console.log(Object.keys(sorter).length, '=====');
+    /* 优化：无条件获取列表 */
+    if (
+      (!sorter || (sorter && Object.keys(JSON.parse(sorter)).length) === 0) &&
+      (!categories || (categories && categories.length === 0)) &&
+      published === null
+    ) {
+      const [list, total] = await getRepository(ArticleEntity)
+        .createQueryBuilder('article')
+        .leftJoinAndSelect('article.categories', 'category')
+        .leftJoinAndSelect('article.content', 'content')
+        .skip(prepage * (page - 1) || 0)
+        .take(prepage && prepage)
+        .orderBy({ 'article.updateTime': 'DESC' })
+        .getManyAndCount();
+
+      return [
+        total,
+        list.map((item: any) => {
+          const { categories, content } = item;
+          item.categories = categories.map((j) => {
+            return {
+              id: j.id,
+              name: j.name,
+            };
+          });
+          item.content = content?.content?.substr(0, 350) || '';
+          return item;
+        }),
+      ];
+    }
+    if (
+      sorter &&
+      JSON.parse(sorter) &&
+      Object.keys(JSON.parse(sorter)).length
+    ) {
       qbody.sort = [JSON.parse(sorter)];
+    }
+
+    if (published !== null) {
+      qbody.query.bool.must.push({
+        match: {
+          published: +published,
+        },
+      });
     }
 
     if (categories?.length !== 0) {
@@ -392,6 +475,9 @@ export class ArticleService {
         },
       });
     }
+
+    console.log(JSON.stringify(qbody, null, 2));
+
     const { body } = await es.search({
       from: prepage * (page - 1) || 0,
       size: prepage && prepage,
@@ -401,7 +487,20 @@ export class ArticleService {
       took,
       hits: { total, hits },
     } = body;
-    return [took, hits, total];
+    return [
+      total.value,
+      hits.map(({ _source, _source: { categories, content } }) => {
+        _source.categories = categories.map((item) => {
+          return {
+            id: item.id,
+            name: item.name,
+          };
+        });
+        _source.content = content.content?.substr(0, 350);
+        return _source;
+      }),
+      took,
+    ];
   }
 
   /**
@@ -520,6 +619,15 @@ export class ArticleService {
   async forceRemoveArticle(id: number, manager: EntityManager) {
     await manager.delete(ArticleEntity, id);
     await es.remove({ id });
+    return null;
+  }
+
+  /**
+   * 发表文章
+   */
+  async publishArticle(id: number, manager: EntityManager) {
+    await manager.update(ArticleEntity, id, { published: 1 });
+    await es.update({ id, published: 1 });
     return null;
   }
 }

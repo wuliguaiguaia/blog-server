@@ -33,6 +33,10 @@ export class QueryArticleListDto {
   words?: string;
 
   sorter?: any;
+
+  columns?: string[]; // 模糊查询字段
+
+  published?: number | null;
 }
 
 export class QueryArticleDto {
