@@ -18,5 +18,6 @@
   },
   "cls": {
     "namespace": "lemon"
-  }
+  },
+  "assetsPath": "blogAssets"
 }

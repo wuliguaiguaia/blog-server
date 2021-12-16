@@ -5,3 +5,14 @@ export const genId = (digits = 9) => {
       .substr(3, digits),
   );
 };
+
+export const genFileName = (name) => {
+  const [title, ...other] = name.split('.');
+  return (
+    title +
+    '-' +
+    parseInt(Date.now() * Math.random() + '') +
+    '.' +
+    other.join('.')
+  );
+};
