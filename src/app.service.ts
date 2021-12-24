@@ -14,10 +14,14 @@ export class AppService {
 
     const assetsPath = config.get('assetsPath');
     let dir = path.join(__dirname, '..', assetsPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
     const { originalname, encoding, mimetype, buffer } = file;
     console.log(encoding, dir);
     const types = /(image|video|audio)/;
     let fileType = '';
+
     if (types.test(mimetype)) {
       fileType = RegExp.$1;
       dir = path.join(dir, fileType);
