@@ -78,7 +78,7 @@ export class ArticleController {
    */
   @Get()
   async getArticle(@Query() articleDto: QueryArticleDto) {
-    const {
+    /* const {
       _source,
       _source: { categories, content },
     } = await this.articleService.getArticleByIdES(articleDto);
@@ -90,7 +90,9 @@ export class ArticleController {
       };
     });
     _source.content = content.content;
-    return _source;
+    return _source; */
+    const data = await this.articleService.getArticleById(articleDto);
+    return data;
   }
 
   /**
