@@ -131,11 +131,11 @@ export class CategoryService {
   /**
    * 删除指定分类
    */
-  async removeCategory(id: number) {
-    return await this.queryBuilder
-      .delete()
-      .from(CategoryEntity, 'category')
-      .where('category.id = :id', { id })
-      .execute();
+  async removeCategory(id: number, manager) {
+    /* 删除文章 */
+    /* 删除 es */
+    /* 删除分类 */
+    await manager.delete(CategoryEntity, id);
+    return null;
   }
 }

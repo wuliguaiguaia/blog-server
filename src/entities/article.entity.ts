@@ -32,6 +32,7 @@ export class ArticleEntity extends BaseEntity {
     type: MysqlDataType.VARCHAR,
     length: 100,
     comment: '关键词',
+    default: '',
   })
   keywords: string;
 
