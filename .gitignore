@@ -35,3 +35,5 @@ lerna-debug.log*
 
 # oauth
 /config/github.oauth.json
+
+/config
