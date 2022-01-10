@@ -1,3 +1,4 @@
+import { Transaction, TransactionManager, EntityManager } from 'typeorm';
 import { CategoryService } from './category.service';
 import {
   CreateCategoryDto,
@@ -54,8 +55,12 @@ export class CategoryController {
   /**
    * 删除分类
    */
-  @Delete(':id')
-  async removeCategory(@Param('id') id: string) {
-    return await this.cateogoryService.removeCategory(+id);
+  @Delete()
+  @Transaction()
+  async removeCategory(
+    @Body('id') id: number,
+    @TransactionManager() manager: EntityManager,
+  ) {
+    return await this.cateogoryService.removeCategory(+id, manager);
   }
 }

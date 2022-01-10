@@ -128,6 +128,9 @@ export class ArticleService {
       .leftJoinAndSelect('article.content', 'content')
       .where('article.id = :id', { id: +id })
       .getOne();
+    if (!data) {
+      throw new ApiException(404, '文章不存在或已删除');
+    }
     const { categories, content } = data;
     const categoriesMap = categories.map(({ id, name }) => ({ id, name }));
     const contentStr = content.content;
@@ -212,8 +215,7 @@ export class ArticleService {
 
     /* es save */
     await es.update(article);
-
-    return article.id;
+    return { id: id, updateTime: new Date() };
   }
 
   /**
