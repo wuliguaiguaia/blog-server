@@ -14,7 +14,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
     // 已经使用 响应拦截器
     // res.end = function (chunk) {
-    //   // eslint-disable-next-line prefer-rest-params
+    //     // eslint-disable-next-line prefer-rest-params
     //   // oldEnd.apply(res, arguments);
     //   // console.log(res);
     // };
