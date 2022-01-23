@@ -12,11 +12,11 @@ export class LoggerMiddleware implements NestMiddleware {
     const oldEnd = res.end;
 
     // 已经使用 响应拦截器
-    res.end = function (chunk) {
-      // eslint-disable-next-line prefer-rest-params
-      // oldEnd.apply(res, arguments);
-      // console.log(res);
-    };
+    // res.end = function (chunk) {
+    //   // eslint-disable-next-line prefer-rest-params
+    //   // oldEnd.apply(res, arguments);
+    //   // console.log(res);
+    // };
     next();
   }
 
