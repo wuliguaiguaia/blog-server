@@ -7,7 +7,7 @@ const client = new Client({
   )}`,
 });
 
-const index = 'articles3';
+const index = 'blog_articles';
 const type = 'alias_doc';
 
 const insert = async (body) => {
