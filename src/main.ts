@@ -14,9 +14,9 @@ import * as connectredis from 'connect-redis';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
-  // app.setGlobalPrefix('lemon');
 
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
+  app.setGlobalPrefix('api/blog');
   app.useGlobalFilters(
     new HttpExceptionFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
   );
