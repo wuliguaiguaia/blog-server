@@ -95,9 +95,7 @@ async function bootstrap() {
    */
   app.use(clsMiddleware);
 
-  app.enableCors({
-    origin: [/orangesolo\.cn$/]
-  });
+  app.enableCors();
 
   /**
    * 日志
