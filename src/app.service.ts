@@ -10,34 +10,32 @@ export class AppService {
   }
 
   upload(file) {
-    console.log(file, '---');
-
-    const assetsPath = config.get('assetsPath');
-    let dir = path.join(__dirname, '..', assetsPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir);
-    }
+    console.log('file:', file);
+    console.log('dirname:', __dirname);
+    console.log('cwd:', process.cwd());
+    let dir = config.get('assetsPath');
     const { originalname, encoding, mimetype, buffer } = file;
-    console.log(encoding, dir);
-    const types = /(image|video|audio)/;
+    console.log('encoding:', encoding);
+    console.log('mimetype:', mimetype);
+    const types = /(image|video|audio)/ig;
     let fileType = '';
-
     if (types.test(mimetype)) {
       fileType = RegExp.$1;
       dir = path.join(dir, fileType);
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
       }
+    } else {
+      // 报错返回
+      return {filePath: null}
     }
-    let fileName = originalname;
-    let filePath = path.join(dir, fileName);
-    if (fs.existsSync(filePath)) {
-      fileName = genFileName(fileName);
-      filePath = path.join(dir, fileName);
-    }
-    fs.writeFileSync(filePath, buffer, 'binary'); // 默认binary
+    let fileName = originalname + '-' + Date.now();
+    dir = path.join(dir, fileName);
+    fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
+    console.log('filepath:', dir);
+    
     return {
-      filePath: path.join(`${assetsPath}/${fileType}/${fileName}`),
+      filePath: dir
     };
   }
 }
