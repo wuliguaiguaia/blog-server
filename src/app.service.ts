@@ -14,6 +14,9 @@ export class AppService {
     console.log('dirname:', __dirname);
     console.log('cwd:', process.cwd());
     let dir = config.get('assetsPath');
+    const dirArr = dir.split('/')
+    const assetsDirName = dirArr[dirArr.length - 1]
+    console.log('assetsDirName:', assetsDirName);
     const { originalname, encoding, mimetype, buffer } = file;
     console.log('encoding:', encoding);
     console.log('mimetype:', mimetype);
@@ -32,7 +35,7 @@ export class AppService {
     let fileName = genFileName(originalname);
     dir = path.join(dir, fileName);
     fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
-    const realPath = path.join(config.get('domain'), fileType, fileName)
+    const realPath = path.join(config.get('domain'), assetsDirName, fileType, fileName)
     console.log('filepath:', dir);
     console.log('realPath:', realPath);
     return {
