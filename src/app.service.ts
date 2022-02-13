@@ -35,7 +35,7 @@ export class AppService {
     let fileName = genFileName(originalname);
     dir = path.join(dir, fileName);
     fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
-    const realPath = path.join(config.get('domain'), assetsDirName, fileType, fileName)
+    const realPath = config.get('domain') + '/' + path.join(assetsDirName, fileType, fileName)
     console.log('filepath:', dir);
     console.log('realPath:', realPath);
     return {
