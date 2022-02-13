@@ -29,13 +29,14 @@ export class AppService {
       // 报错返回
       return {filePath: null}
     }
-    let fileName = originalname + '-' + Date.now();
+    let fileName = genFileName(originalname);
     dir = path.join(dir, fileName);
     fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
+    const realPath = path.join(config.get('domain'), fileType, fileName)
     console.log('filepath:', dir);
-    
+    console.log('realPath:', realPath);
     return {
-      filePath: dir
+      filePath: realPath
     };
   }
 }
