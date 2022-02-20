@@ -1,3 +1,4 @@
+import { MessageModule } from './modules/message/message.module';
 // import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import {
   WinstonModule,
@@ -85,6 +86,7 @@ import * as winston from 'winston';
     CategoryModule,
     CommitModule,
     AuthModule,
+    MessageModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -9,6 +9,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
 } from 'typeorm';
 import { MysqlDataType } from './../common/constants/database/mysql';
@@ -16,6 +17,7 @@ import { UserInfoEntity } from './user.entity';
 import { CategoryEntity } from './category.entity';
 import { BaseEntity } from './base-entity/base.entity';
 import { ArticleContentEntity } from './article_content.entity';
+import { CommentEntity } from './comment.entity';
 
 @Entity('article')
 export class ArticleEntity extends BaseEntity {
@@ -39,7 +41,6 @@ export class ArticleEntity extends BaseEntity {
   @OneToOne(() => ArticleContentEntity, (content) => content.article, {
     cascade: true, // 创建时同时更新到content
   })
-  // @JoinColumn()
   content: ArticleContentEntity;
 
   @Column({
@@ -67,4 +68,9 @@ export class ArticleEntity extends BaseEntity {
   /* 在多对一/一对多的关系中，拥有方总是多对一的 */
 
   contentSlice: string;
+
+  @OneToMany((type) => CommentEntity, (comment) => comment.article) // note: we will create author property in the Photo class below
+
+  comments: CommentEntity[]
+
 }
