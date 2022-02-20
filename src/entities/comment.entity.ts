@@ -9,4 +9,6 @@ import { MessageEntity } from './message.entity';
 export class CommentEntity extends MessageEntity {
   @ManyToOne((type) => ArticleEntity, (article) => article.comments)
   article: ArticleEntity
+  
+  reply_comment_id: number 
 }

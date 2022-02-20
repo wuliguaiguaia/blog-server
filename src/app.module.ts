@@ -1,4 +1,3 @@
-import { MessageModule } from './modules/message/message.module';
 // import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import {
   WinstonModule,
@@ -9,6 +8,8 @@ import { AppController } from './app.controller';
 import { ArticleModule } from './modules/article/article.module';
 import { CommitModule } from './modules/commit/commit.module';
 import { UserModule } from './modules/user/user.module';
+import { MessageModule } from './modules/message/message.module';
+import { CommentModule } from './modules/comment/comment.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { CategoryModule } from './modules/category/category.module';
@@ -17,6 +18,7 @@ import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as config from 'config';
 import * as path from 'path';
 import * as winston from 'winston';
+
 @Global() // 全局模块
 @Module({
   imports: [
@@ -86,7 +88,8 @@ import * as winston from 'winston';
     CategoryModule,
     CommitModule,
     AuthModule,
-    MessageModule
+    MessageModule,
+    CommentModule
   ],
   controllers: [AppController],
   providers: [AppService],
