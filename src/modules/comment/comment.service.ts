@@ -1,3 +1,4 @@
+import { ArticleEntity } from 'src/entities/article.entity';
 /*
  * service 提供操作数据库服务接口
  */
@@ -11,20 +12,35 @@ export class CommentService {
    * 增加comment
    */
   async addComment(commentDto) {
-    return getRepository(CommentEntity).save(commentDto)
+    const { articleId } = commentDto;
+    const article = await getRepository(ArticleEntity).findOne(articleId);
+    commentDto.article = article;
+    return getRepository(CommentEntity).save(commentDto);
   }
-
-  /**
-   * 更新comment
-   */
-  async updateComment() {}
 
   /**
    * 查询comment列表
    */
-  async getCommentList() {
+  async getCommentList(commentDto) {
+    const { articleId } = commentDto;
+    if (articleId) {
+      return this.getCommentListById(commentDto);
+    }
+  }
+
+  async getCommentListById(commentDto) {
+    const { articleId } = commentDto;
     return getRepository(CommentEntity)
       .createQueryBuilder('comment')
-      .getManyAndCount();
+      .where(`comment.articleId = ${articleId} and isRead = 1`)
+      .orderBy('comment.create_time', 'ASC')
+      .getMany();
+  }
+
+  /**
+   * 删除comment
+   */
+  async removeComment({ id }) {
+    return getRepository(CommentEntity).delete(id);
   }
 }

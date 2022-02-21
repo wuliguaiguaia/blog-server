@@ -6,7 +6,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -70,7 +69,5 @@ export class ArticleEntity extends BaseEntity {
   contentSlice: string;
 
   @OneToMany((type) => CommentEntity, (comment) => comment.article) // note: we will create author property in the Photo class below
-
-  comments: CommentEntity[]
-
+  comments: CommentEntity[];
 }

@@ -1,5 +1,10 @@
 import { MysqlDataType } from '../common/constants/database/mysql';
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 /**
  * 建议
@@ -43,6 +48,7 @@ export class MessageEntity {
     type: MysqlDataType.VARCHAR,
     nullable: false,
     comment: '个人网站',
+    default: '',
   })
   website: string;
 }

@@ -1,6 +1,11 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class CommentDto {
+export class CreateCommentDto {
+  @IsNotEmpty({
+    message: '文章ID不能为空',
+  })
+  articleId: number;
+
   @IsNotEmpty({
     message: '内容不能为空',
   })
@@ -16,5 +21,11 @@ export class CommentDto {
   })
   email: string;
 
-  website: string;
+  website?: string;
+  replyId?: number;
+  replyToReplyId?: number;
+}
+
+export class QueryCommentDto {
+  articleId?: number;
 }

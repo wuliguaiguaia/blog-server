@@ -162,4 +162,13 @@ export class ArticleController {
     await this.commitService.addCommit(manager);
     return await this.articleService.publishArticle(+id, manager);
   }
+
+  /**
+   * 获取文章与留言总数
+   */
+  @Get('/count')
+  @Transaction()
+  async getCount(@TransactionManager() manager: EntityManager) {
+    return await this.articleService.getCount(manager);
+  }
 }
