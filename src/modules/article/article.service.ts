@@ -1,4 +1,3 @@
-import { CommitService } from './../commit/commit.service';
 /*
  * service 提供操作数据库服务接口
  */
@@ -17,7 +16,8 @@ import {
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from 'src/entities/article.entity';
-import { CommitEntity } from './../../entities/commit.entity';
+import { MessageEntity } from 'src/entities/message.entity';
+import { CommentEntity } from 'src/entities/comment.entity';
 import { ArticleContentEntity } from 'src/entities/article_content.entity';
 import { CategoryEntity } from 'src/entities/category.entity';
 import getSearchRangText from 'src/common/utils/getSearchRangeText';
@@ -632,5 +632,18 @@ export class ArticleService {
     await manager.update(ArticleEntity, id, { published: 1 });
     await es.update({ id, published: 1 });
     return null;
+  }
+
+  /**
+   * 获取文章与留言总数
+   */
+  async getCount(manager: EntityManager) {
+    const articleLen = await manager.count(ArticleEntity);
+    const messageLen = await manager.count(MessageEntity);
+    const CommentLen = await manager.count(CommentEntity);
+    return {
+      articleLen,
+      messageLen: messageLen + CommentLen,
+    };
   }
 }
