@@ -29,3 +29,25 @@ export class CreateCommentDto {
 export class QueryCommentDto {
   articleId?: number;
 }
+
+export class AllQueryCommentDto {
+  articleId?: number;
+
+  @IsNotEmpty({
+    message: '页数不能为空',
+  })
+  prepage: number;
+
+  @IsNotEmpty({
+    message: '页码不能为空',
+  })
+  page: number;
+
+  sort?: number;
+
+  isRead?: number;
+}
+
+export class UpdateCommentDto {
+  id: number;
+}

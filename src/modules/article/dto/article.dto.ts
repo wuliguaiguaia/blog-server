@@ -16,6 +16,8 @@ export class CreateArticleDto {
   keywords: string;
 
   content: string;
+
+  desc?: string;
 }
 
 export class QueryArticleListDto {
@@ -54,4 +56,6 @@ export class UpdateArticleDto extends QueryArticleDto {
   keywords: string;
 
   content: string;
+
+  desc?: string;
 }

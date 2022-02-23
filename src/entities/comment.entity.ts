@@ -13,7 +13,7 @@ export class CommentEntity extends MessageEntity {
 
   @Column({
     type: MysqlDataType.INT,
-    default: 1 /* TODO */,
+    default: 0,
     comment: '是否已读',
   })
   isRead: number;

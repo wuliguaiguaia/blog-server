@@ -56,6 +56,13 @@ export class ArticleEntity extends BaseEntity {
   })
   published: number;
 
+  @Column({
+    type: MysqlDataType.VARCHAR,
+    comment: '简介',
+    default: '',
+  })
+  desc: string;
+
   @ManyToMany(() => CategoryEntity, (category) => category.articles, {
     onDelete: 'CASCADE', // 同时删除关系
   })

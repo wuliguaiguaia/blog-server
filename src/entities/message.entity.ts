@@ -21,6 +21,13 @@ export class MessageEntity {
   createTime: Date;
 
   @Column({
+    type: MysqlDataType.INT,
+    default: 0,
+    comment: '是否已读',
+  })
+  isRead: number;
+
+  @Column({
     type: MysqlDataType.VARCHAR,
     nullable: false,
     name: 'content',
