@@ -67,6 +67,13 @@ export class CommentController {
     return true;
   }
 
+  /* 审核留言 */
+  @Put('/check')
+  async checkComment(@Body() CommentDto: UpdateCommentDto) {
+    await this.commentService.checkComment(CommentDto);
+    return true;
+  }
+
   /**
    * 删除 Comment
    */

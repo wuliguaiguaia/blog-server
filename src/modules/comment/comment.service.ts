@@ -27,20 +27,28 @@ export class CommentService {
   }
 
   /**
+   * 审核comment
+   */
+  async checkComment(commentDto) {
+    const { id, isCheck } = commentDto;
+    return getRepository(CommentEntity).update(id, { isCheck });
+  }
+
+  /**
    * 查询comment列表
    */
   async getCommentList(commentDto) {
-    const { prepage, page, articleId, sort = 0, isRead } = commentDto;
+    const { prepage, page, articleId, sort = 0, isCheck } = commentDto;
     const queryBuilder = getRepository(CommentEntity)
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.article', 'article');
 
     let data = [];
     if (articleId) {
-      if (isRead !== undefined) {
+      if (isCheck !== undefined) {
         data = await queryBuilder
           .where(
-            `comment.articleId = ${articleId} and comment.isRead = ${isRead}`,
+            `comment.articleId = ${articleId} and comment.isCheck = ${isCheck}`,
           )
           .orderBy('comment.createTime', Number(sort) === 0 ? 'DESC' : 'ASC')
           .skip(prepage * (page - 1))
@@ -56,9 +64,9 @@ export class CommentService {
       }
     }
 
-    if (isRead !== undefined) {
+    if (isCheck !== undefined) {
       data = await queryBuilder
-        .where(`comment.isRead = ${isRead}`)
+        .where(`comment.isCheck = ${isCheck}`)
         .orderBy('comment.createTime', Number(sort) === 0 ? 'DESC' : 'ASC')
         .skip(prepage * (page - 1))
         .take(prepage * page)
@@ -87,7 +95,7 @@ export class CommentService {
       getRepository(CommentEntity)
         .createQueryBuilder('comment')
         .where(`comment.articleId = ${articleId}`)
-        // .where(`comment.articleId = ${articleId} and isRead = 1`)
+        // .where(`comment.articleId = ${articleId} and isCheck = 1`)
         .orderBy('comment.create_time', 'ASC')
         .getMany()
     );

@@ -50,4 +50,5 @@ export class AllQueryCommentDto {
 
 export class UpdateCommentDto {
   id: number;
+  isCheck?: number;
 }

@@ -37,4 +37,6 @@ export class AllQueryMessageDto {
 
 export class UpdateMessageDto {
   id: number;
+
+  isCheck?: number;
 }

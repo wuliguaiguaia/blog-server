@@ -28,6 +28,13 @@ export class MessageEntity {
   isRead: number;
 
   @Column({
+    type: MysqlDataType.INT,
+    default: 0,
+    comment: '是否审核',
+  })
+  isCheck: number;
+
+  @Column({
     type: MysqlDataType.VARCHAR,
     nullable: false,
     name: 'content',

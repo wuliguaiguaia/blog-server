@@ -20,6 +20,13 @@ export class CommentEntity extends MessageEntity {
 
   @Column({
     type: MysqlDataType.INT,
+    default: 0,
+    comment: '是否审核',
+  })
+  isCheck: number;
+
+  @Column({
+    type: MysqlDataType.INT,
     comment: '回复顶级comment id',
     default: 0,
   })

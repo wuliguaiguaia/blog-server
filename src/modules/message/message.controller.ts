@@ -53,6 +53,13 @@ export class MessageController {
     return true;
   }
 
+  /* 审核留言 */
+  @Put('/check')
+  async checkMessage(@Body() CommentDto: UpdateMessageDto) {
+    await this.messageService.checkMessage(CommentDto);
+    return true;
+  }
+
   /**
    * 删除 message
    */
