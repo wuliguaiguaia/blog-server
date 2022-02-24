@@ -18,6 +18,8 @@ import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as config from 'config';
 import * as path from 'path';
 import * as winston from 'winston';
+import { SocketModule } from './common/ws/ws.module';
+import { WsStartGateway } from './common/ws/ws.gateway';
 
 @Global() // 全局模块
 @Module({
@@ -89,10 +91,11 @@ import * as winston from 'winston';
     CommitModule,
     AuthModule,
     MessageModule,
-    CommentModule
+    CommentModule,
+    SocketModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, WsStartGateway],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

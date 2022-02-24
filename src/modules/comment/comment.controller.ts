@@ -56,8 +56,8 @@ export class CommentController {
    */
   @Post()
   async addComment(@Body() CommentDto: CreateCommentDto) {
-    await this.commentService.addComment(CommentDto);
-    return true;
+    const data = await this.commentService.addComment(CommentDto);
+    return { id: data.id };
   }
 
   /* 已读留言 */

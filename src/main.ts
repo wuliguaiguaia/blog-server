@@ -1,3 +1,4 @@
+import { WsAdapter } from './common/ws/ws.adapter';
 import { clsMiddleware } from './common/middleware/cls.middleware';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ValidationPipe } from './common/pipes/validation.pipe';
@@ -20,6 +21,7 @@ async function bootstrap() {
     new HttpExceptionFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
   );
   app.useGlobalPipes(new ValidationPipe());
+  app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalInterceptors(
     new ResponseInterceptor(app.get(WINSTON_MODULE_NEST_PROVIDER)),
   );

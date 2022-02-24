@@ -13,10 +13,14 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { WsStartGateway } from 'src/common/ws/ws.gateway';
 
 @Controller('message')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly ws: WsStartGateway,
+  ) {}
   /**
    * 获取message列表
    */
@@ -41,7 +45,16 @@ export class MessageController {
    */
   @Post()
   async addMessage(@Body() messageDto: MessageDto) {
-    return await this.messageService.addMessage(messageDto);
+    const data = await this.messageService.addMessage(messageDto);
+    console.log(3333);
+    console.log(this.ws.server.sockets);
+
+    // this.ws.server.emit('newComment', { data: 'Nest' });
+    // this.ws.server.newComment({ s: 11 });
+    // this.ws.server.emit('createD', { data: '穷哈哈哈' });
+    this.ws.server.emit('createD', { data: '穷哈哈哈' });
+
+    return { id: data.id };
   }
 
   /**
