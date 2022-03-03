@@ -14,11 +14,14 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const roles = this.reflector.get<number[]>('roles', context.getHandler());
     if (!roles || roles.length === 0) return true;
+    console.log(roles);
 
     const request = context.switchToHttp().getRequest();
 
+    console.log(request.session);
+
     const userInfo = request.session?.userInfo;
-    if (!userInfo) throw new ApiException(ApiErrorCode.NOT_HAVE_AUTH);
+    if (!userInfo) throw new ApiException(ApiErrorCode.NOT_LOGIN);
 
     if (roles.some((r) => r === Number(userInfo.role))) return true;
 

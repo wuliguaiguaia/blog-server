@@ -68,9 +68,9 @@ export class ArticleEntity extends BaseEntity {
   })
   categories: CategoryEntity[];
 
-  @ManyToOne(() => UserInfoEntity, (user) => user.articles)
-  @JoinColumn()
-  user: UserInfoEntity;
+  // @ManyToOne(() => UserInfoEntity, (user) => user.articles)
+  // @JoinColumn()
+  // user: UserInfoEntity;
   /* 在多对一/一对多的关系中，拥有方总是多对一的 */
 
   contentSlice: string;

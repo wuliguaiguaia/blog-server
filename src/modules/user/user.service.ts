@@ -31,25 +31,8 @@ export class UserService {
    * @param userDto
    */
   async addUser(userDto: CreateUserDto) {
-    const list = await this.getUserByCondition({
-      condition: 'mobile = :mobile', // and or
-      // .where("user.name IN (:...names)", { names: [ "Timber", "Cristal", "Lina" ] })
-      values: { mobile: userDto.mobile },
-    });
-    if (list.length > 0) {
-      throw new ApiException(
-        ApiErrorCode.TABLE_OPERATE_ERROR,
-        '用户手机号不能重复',
-      );
-    }
-    return await this.queryBuilder
-      .insert()
-      .into(UserInfoEntity)
-      .values({
-        ...userDto,
-      })
-      .execute();
-    // return await this.userInfoRepository.save(userDto);
+    console.log(userDto);
+    return getRepository(UserInfoEntity).save({ ...userDto });
   }
 
   /**
@@ -68,17 +51,17 @@ export class UserService {
    * 更新用户
    */
   async updateUser(userDto: UpdateUserDto) {
-    const list = await this.getUserByCondition({
-      condition: 'mobile = :mobile and id != :id',
-      values: { mobile: userDto.mobile, id: userDto.id },
-    });
-    if (list.length) {
-      throw new Error('用户手机号名重复');
-      // throw new ApiException(
-      //   ApiErrorCode.TABLE_OPERATE_ERROR,
-      //   '用户手机号不能重复',
-      // );
-    }
+    // const list = await this.getUserByCondition({
+    //   condition: 'mobile = :mobile and id != :id',
+    //   values: { mobile: userDto.mobile, id: userDto.id },
+    // });
+    // if (list.length) {
+    //   throw new Error('用户手机号名重复');
+    //   // throw new ApiException(
+    //   //   ApiErrorCode.TABLE_OPERATE_ERROR,
+    //   //   '用户手机号不能重复',
+    //   // );
+    // }
 
     return await this.queryBuilder
       .update(UserInfoEntity)
@@ -97,6 +80,17 @@ export class UserService {
     return await this.getUserByCondition({
       condition: 'mobile = :mobile',
       values: { mobile },
+    });
+  }
+
+  /**
+   * 通过用户名查找用户
+   * @param mobile
+   */
+  async getUserByName(username: string) {
+    return await this.getUserByCondition({
+      condition: 'username = :username',
+      values: { username },
     });
   }
 

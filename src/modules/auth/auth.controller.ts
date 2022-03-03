@@ -12,12 +12,13 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() userDto: LoginDto, @Req() req) {
-    const { mobile, password } = userDto;
+    const { username, password } = userDto;
     // console.log(mobile, password);
-    const users = await this.userService.getUserByMobile(mobile);
+    const users = await this.userService.getUserByName(username);
     if (users.length === 0) {
       throw new ApiException(ApiErrorCode.NOT_VALUABLE_USER_ID, '用户不存在');
     }
+    // 已登录判断
     const user = users[0];
     // this.logger.log('xxxxx');
     if (user.password !== password) {
@@ -27,6 +28,18 @@ export class AuthController {
     }
   }
 
+  @Post('register')
+  async register(@Body() userDto: LoginDto, @Req() req) {
+    const { username } = userDto;
+    const users = await this.userService.getUserByName(username);
+    if (users.length > 0) {
+      throw new ApiException(ApiErrorCode.USERNAME_REPEAT, '用户名已存在');
+    }
+    console.log(users);
+    const user = await this.userService.addUser(userDto);
+    req.session.userInfo = user; // 登录
+  }
+
   @Get('logout')
   async logout(@Req() req, @Res() res) {
     req.session.destroy((err) => {
@@ -34,7 +47,6 @@ export class AuthController {
       if (err) {
         throw new ApiException(ApiErrorCode.SYSTEM_EXCEPTION_ERROR);
       }
-      res.redirect('/');
     });
   }
 }

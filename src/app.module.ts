@@ -89,7 +89,7 @@ import * as winston from 'winston';
     CommitModule,
     AuthModule,
     MessageModule,
-    CommentModule
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

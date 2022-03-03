@@ -48,7 +48,7 @@ async function bootstrap() {
       cookie: {
         path: '/',
         httpOnly: true,
-        secure: false,
+        secure: true,
         maxAge: 5000 * 1000, // 有效期，单位是毫秒
       },
     }),
