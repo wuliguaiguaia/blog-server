@@ -1,5 +1,3 @@
-import { ApiErrorCode } from './../../common/exceptions/api.code.enum';
-import { ApiException } from './../../common/exceptions/api.exception';
 /*
  * service 提供操作数据库服务接口
  */
@@ -85,13 +83,13 @@ export class UserService {
 
   /**
    * 通过用户名查找用户
-   * @param mobile
+   * @param username
    */
   async getUserByName(username: string) {
-    return await this.getUserByCondition({
-      condition: 'username = :username',
-      values: { username },
-    });
+    return await getRepository(UserInfoEntity)
+      .createQueryBuilder('user')
+      .where('user.username = :username', { username })
+      .getOne();
   }
 
   /**

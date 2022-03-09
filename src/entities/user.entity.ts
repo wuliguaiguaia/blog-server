@@ -39,7 +39,7 @@ export class UserInfoEntity extends BaseEntity {
     default: 2,
     comment: '用户角色',
   })
-  role: RoleEnum; // 可以是多个
+  role: RoleEnum;
 
   // @OneToMany(() => ArticleEntity, (article) => article.user)
   // articles: ArticleEntity[];

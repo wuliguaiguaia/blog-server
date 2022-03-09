@@ -1,7 +1,7 @@
+import { RoleEnum } from './../constants/role';
+import { SetMetadata } from '@nestjs/common';
+
 /**
  * 定制用户角色元数据
  */
-
-import { SetMetadata } from '@nestjs/common';
-
-export const Roles = (...roles: number[]) => SetMetadata('roles', roles);
+export const Roles = (...roles: RoleEnum[]) => SetMetadata('roles', roles);

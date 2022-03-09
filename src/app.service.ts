@@ -11,10 +11,10 @@ export class AppService {
 
   upload(file) {
     let dir = config.get('assetsPath');
-    const dirArr = dir.split('/')
-    const assetsDirName = dirArr[dirArr.length - 1]
+    const dirArr = dir.split('/');
+    const assetsDirName = dirArr[dirArr.length - 1];
     const { originalname, encoding, mimetype, buffer } = file;
-    const types = /(image|video|audio)/ig;
+    const types = /(image|video|audio)/gi;
     let fileType = '';
     if (types.test(mimetype)) {
       fileType = RegExp.$1;
@@ -24,14 +24,15 @@ export class AppService {
       }
     } else {
       // 报错返回
-      return {filePath: null}
+      return { filePath: null };
     }
-    let fileName = genFileName(originalname);
+    const fileName = genFileName(originalname);
     dir = path.join(dir, fileName);
     fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
-    const realPath = config.get('domain') + '/' + path.join(assetsDirName, fileType, fileName)
+    const realPath =
+      config.get('domain') + '/' + path.join(assetsDirName, fileType, fileName);
     return {
-      filePath: realPath
+      filePath: realPath,
     };
   }
 }

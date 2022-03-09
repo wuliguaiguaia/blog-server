@@ -1,9 +1,15 @@
+import { RoleEnum } from './../constants/role';
 /**
  * 操作权限控制
  */
 
 import { ApiException } from './../exceptions/api.exception';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Request,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiErrorCode } from '../exceptions/api.code.enum';
 
@@ -12,18 +18,16 @@ export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
-    const roles = this.reflector.get<number[]>('roles', context.getHandler());
+    const roles = this.reflector.get<number[]>('roles', context.getHandler()); // 从控制器注解中得到的角色组信息
     if (!roles || roles.length === 0) return true;
     console.log(roles);
 
     const request = context.switchToHttp().getRequest();
 
-    console.log(request.session);
+    const user = request.user;
+    if (!user) throw new ApiException(ApiErrorCode.NOT_LOGIN);
 
-    const userInfo = request.session?.userInfo;
-    if (!userInfo) throw new ApiException(ApiErrorCode.NOT_LOGIN);
-
-    if (roles.some((r) => r === Number(userInfo.role))) return true;
+    if (roles.some((r) => r === Number(user.userRole))) return true;
 
     throw new ApiException(ApiErrorCode.NOT_HAVE_AUTH);
   }

@@ -1,9 +1,6 @@
 import { Transaction, TransactionManager, EntityManager } from 'typeorm';
 import { CategoryService } from './category.service';
-import {
-  CreateCategoryDto,
-  UpdateCategoryDto,
-} from './dto/category.dto';
+import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
 import {
   Body,
   Controller,
@@ -11,11 +8,13 @@ import {
   Get,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
 import { RoleEnum } from 'src/common/constants/role';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('category')
 export class CategoryController {
@@ -26,9 +25,10 @@ export class CategoryController {
    * 获取分类列表
    */
   @Get('/list')
-  @UseGuards(RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(RoleEnum.ADMIN)
-  async getCategoryList() {
+  async getCategoryList(@Req() req) {
+    console.log(req.user);
     const [list, total] = await this.cateogoryService.getCategoryList();
     return { list, total };
   }

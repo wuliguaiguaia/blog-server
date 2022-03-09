@@ -1,3 +1,4 @@
+import { UserService } from './modules/user/user.service';
 import { clsMiddleware } from './common/middleware/cls.middleware';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ValidationPipe } from './common/pipes/validation.pipe';
@@ -11,7 +12,9 @@ import * as helmet from 'helmet';
 import * as session from 'express-session';
 import * as redis from 'redis';
 import * as connectredis from 'connect-redis';
+import * as passport from 'passport';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { LocalStrategy } from './modules/auth/local.strategy';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
@@ -38,10 +41,18 @@ async function bootstrap() {
   redisClient.on('connect', () => {
     console.log('Connected to redis successfully');
   });
+  // // 设置passport序列化和反序列化user的方法，在将用户信息存储到session时使用
+  // passport.serializeUser(function (user, done) {
+  //   done(null, user);
+  // });
+  // // 反序列化
+  // passport.deserializeUser(function (user, done) {
+  //   done(null, user);
+  // });
   app.use(
     session({
       store: new RedisStore({ client: redisClient }),
-      secret: 'nest test', // 用来对session id相关的cookie进行签名
+      secret: 'nest lemon test', // 用来对session id相关的cookie进行签名
       name: 'connect.sid', // 默认
       resave: false, // (是否允许)当客户端并行发送多个请求时，其中一个请求在另一个请求结束时对session进行修改覆盖并保存
       saveUninitialized: false, // 初始化session时是否保存到存储
@@ -53,7 +64,9 @@ async function bootstrap() {
       },
     }),
   );
-
+  // 设置passport，并启用session
+  // app.use(passport.initialize());
+  // app.use(passport.session());
   /**
    * 增加安全相关请求头
    *
