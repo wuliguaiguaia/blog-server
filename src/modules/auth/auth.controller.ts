@@ -7,11 +7,10 @@ import { UserService } from './../user/user.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
-  Req,
   Request,
-  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -19,56 +18,42 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller()
 export class AuthController {
   constructor(
-    private readonly authService: AuthService, // private readonly logger: MyLogger,
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
   ) {}
 
-  @UseGuards(AuthGuard('local')) // 本地策略默认名:local
+  @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req) {
-    console.log('JWT验证 - Step 1: 用户请求登录');
-    return this.authService.login(req.user);
+    console.log('JWT验证 - Step 1: 用户请求登录 req.user');
+    return this.authService.login(req.session.passport.user);
   }
 
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('applySession'))
   @Get('profile')
   getProfile(@Request() req) {
-    return req.user;
+    return true;
   }
-  // async login(@Body() userDto: LoginDto, @Req() req) {
-  //   const { username, password } = userDto;
-  //   // console.log(mobile, password);
-  //   const user = await this.userService.getUserByName(username);
-  //   if (!user) {
-  //     throw new ApiException(ApiErrorCode.NOT_VALUABLE_USER_ID, '用户不存在');
-  //   }
-  //   // 已登录判断
-  //   // this.logger.log('xxxxx');
-  //   if (user.password !== password) {
-  //     throw new ApiException(ApiErrorCode.TABLE_OPERATE_ERROR, '密码错误');
-  //   } else {
-  //     req.session.userInfo = user; // 登录
-  //   }
-  //   return true;
-  // }
 
   @Post('register')
-  async register(@Body() userDto: LoginDto, @Req() req) {
-    // const { username } = userDto;
-    // const userq = await this.userService.getUserByName(username);
-    // if (!userq) {
-    //   throw new ApiException(ApiErrorCode.USERNAME_REPEAT, '用户名已存在');
-    // }
-    // const user = await this.userService.addUser(userDto);
-    // req.session.userInfo = user; // 登录
+  async register(@Body() userDto: LoginDto) {
+    const { username } = userDto;
+    const user = await this.userService.getUserByName(username);
+    if (user) {
+      throw new ApiException(ApiErrorCode.USERNAME_REPEAT);
+    }
+    await this.userService.addUser(userDto);
+    return true;
   }
 
-  @Get('logout')
-  async logout(@Req() req, @Res() res) {
-    // req.session.destroy((err) => {
-    //   // 注销
-    //   if (err) {
-    //     throw new ApiException(ApiErrorCode.SYSTEM_EXCEPTION_ERROR);
-    //   }
-    // });
+  @Delete('logout')
+  async logout(@Request() req) {
+    req.session.destroy((err) => {
+      // 注销
+      if (err) {
+        throw new ApiException(ApiErrorCode.SYSTEM_EXCEPTION_ERROR);
+      }
+    });
+    return null;
   }
 }

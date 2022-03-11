@@ -36,7 +36,7 @@ export class UserInfoEntity extends BaseEntity {
 
   @Column({
     type: MysqlDataType.TINYINT,
-    default: 2,
+    default: RoleEnum.NORMAL,
     comment: '用户角色',
   })
   role: RoleEnum;

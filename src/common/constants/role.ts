@@ -3,9 +3,9 @@
  */
 
 export enum RoleEnum {
-  NORMAL = 2,
+  NORMAL = 0,
   ADMIN = 1,
-  SUPER = 0,
+  SUPER = 2,
 }
 
 export const RoleMap = {

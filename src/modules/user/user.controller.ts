@@ -11,6 +11,7 @@ import {
   Param,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/user.dto';
@@ -18,6 +19,17 @@ import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/user.dto';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get('profile')
+  getProfile(@Request() req) {
+    const { passport } = req.session;
+    console.log(req.session);
+    if (!passport?.user) {
+      return null;
+    }
+    const { id, role, username } = passport.user;
+    return { id, role, username };
+  }
 
   /**
    * 获取用户列表

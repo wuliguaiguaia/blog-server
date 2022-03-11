@@ -1,13 +1,9 @@
-import { ApiErrorCode } from './../../common/exceptions/api.code.enum';
-import { ApiException } from './../../common/exceptions/api.exception';
 import { UserService } from './../user/user.service';
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
+    private readonly userService: UserService, // private readonly jwtService: JwtService,
   ) {}
 
   /**
@@ -17,6 +13,7 @@ export class AuthService {
     console.log('2 验证');
     const { username } = userDto;
     const user = await this.userService.getUserByName(username);
+    if (!user) return null;
     if (userDto.password === user.password) {
       const { password, ...result } = user;
       return result;
@@ -24,7 +21,12 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
+  async login(user?: any) {
+    const { id, role, username } = user;
+    return { id, role, username };
+  }
+
+  /* async login_jwt(user: any) {
     console.log('3 颁发签证');
     const payload = {
       username: user.username,
@@ -35,5 +37,5 @@ export class AuthService {
       // 从用户对象属性的子集生成 jwt，返回一个 access_token 属性
       access_token: this.jwtService.sign(payload),
     };
-  }
+  } */
 }

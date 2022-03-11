@@ -1,18 +1,11 @@
-import { RoleEnum } from './../constants/role';
-/**
- * 操作权限控制
- */
-
 import { ApiException } from './../exceptions/api.exception';
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  Request,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ApiErrorCode } from '../exceptions/api.code.enum';
 
+/**
+ * 操作权限控制
+ */
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -24,10 +17,11 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
 
-    const user = request.user;
+    const user = request.session.passport.user;
+
     if (!user) throw new ApiException(ApiErrorCode.NOT_LOGIN);
 
-    if (roles.some((r) => r === Number(user.userRole))) return true;
+    if (roles.some((r) => r === Number(user.role))) return true;
 
     throw new ApiException(ApiErrorCode.NOT_HAVE_AUTH);
   }
