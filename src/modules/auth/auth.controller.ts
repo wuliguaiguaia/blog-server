@@ -37,10 +37,17 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() userDto: LoginDto) {
-    const { username } = userDto;
+    const { username, password } = userDto;
     const user = await this.userService.getUserByName(username);
     if (user) {
       throw new ApiException(ApiErrorCode.USERNAME_REPEAT);
+    }
+    const pattern = /^[a-z0-8]{8,$/;
+    if (!pattern.test(password)) {
+      throw new ApiException(
+        ApiErrorCode.TABLE_OPERATE_ERROR,
+        '密码只能是数字或字母，且必须在八位以上',
+      );
     }
     await this.userService.addUser(userDto);
     return true;

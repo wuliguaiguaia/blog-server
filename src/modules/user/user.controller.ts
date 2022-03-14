@@ -76,7 +76,7 @@ export class UserController {
     }
     if (username !== undefined) {
       user = await this.userService.getUserByName(username);
-      if (user) {
+      if (user && user.id !== id) {
         throw new ApiException(ApiErrorCode.USERNAME_REPEAT);
       }
     }
