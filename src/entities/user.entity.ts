@@ -14,6 +14,7 @@ export class UserInfoEntity extends BaseEntity {
     type: MysqlDataType.VARCHAR,
     comment: '用户名',
     length: 100,
+    unique: true,
     nullable: true,
   })
   username: string;

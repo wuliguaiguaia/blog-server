@@ -13,15 +13,7 @@ export class CreateUserDto {
   })
   password: string;
 
-  /* @IsNotEmpty({
-    message: '手机号不能为空',
-  })
-  mobile: string;
-
-  @IsNotEmpty({
-    message: '用户角色不能为空',
-  })
-  role: number; */
+  role?: number;
 }
 
 export class QueryUserDto {
@@ -30,21 +22,25 @@ export class QueryUserDto {
   })
   page: number;
 
-  // @IsNotEmpty({
-  //   message: '每页条数不能为空',
-  // })
+  @IsNotEmpty({
+    message: '每页条数不能为空',
+  })
   prepage: number;
 
-  name?: string;
-  mobile?: string;
-  role?: number;
+  role?: string;
 }
 
-export class UpdateUserDto extends CreateUserDto {
+export class UpdateUserDto {
   @IsNotEmpty({
     message: '用户id不能为空',
   })
   id: number;
+
+  username?: string;
+
+  password?: string;
+
+  role?: number;
 }
 
 export class DeleteUserDto {}

@@ -1,5 +1,6 @@
 import { UserService } from './../user/user.service';
 import { Injectable } from '@nestjs/common';
+import { comparePass } from 'src/common/utils/decode';
 @Injectable()
 export class AuthService {
   constructor(
@@ -14,7 +15,7 @@ export class AuthService {
     const { username } = userDto;
     const user = await this.userService.getUserByName(username);
     if (!user) return null;
-    if (userDto.password === user.password) {
+    if (comparePass(userDto.password, user.password)) {
       const { password, ...result } = user;
       return result;
     }

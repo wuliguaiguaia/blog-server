@@ -1,7 +1,6 @@
 /*
  * service 提供操作数据库服务接口
  */
-// import { ArticleService } from './../article/article.service';
 import { UserInfoEntity } from './../../entities/user.entity';
 import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/user.dto';
 import {
@@ -12,6 +11,7 @@ import {
   getRepository,
 } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { encodePass } from 'src/common/utils/decode';
 
 @EntityRepository(UserInfoEntity)
 export class UserService {
@@ -29,8 +29,9 @@ export class UserService {
    * @param userDto
    */
   async addUser(userDto: CreateUserDto) {
-    console.log(userDto);
-    return getRepository(UserInfoEntity).save({ ...userDto });
+    let { password } = userDto;
+    password = await encodePass(password);
+    return getRepository(UserInfoEntity).save({ ...userDto, password });
   }
 
   /**
@@ -49,22 +50,17 @@ export class UserService {
    * 更新用户
    */
   async updateUser(userDto: UpdateUserDto) {
-    // const list = await this.getUserByCondition({
-    //   condition: 'mobile = :mobile and id != :id',
-    //   values: { mobile: userDto.mobile, id: userDto.id },
-    // });
-    // if (list.length) {
-    //   throw new Error('用户手机号名重复');
-    //   // throw new ApiException(
-    //   //   ApiErrorCode.TABLE_OPERATE_ERROR,
-    //   //   '用户手机号不能重复',
-    //   // );
-    // }
-
-    return await this.queryBuilder
+    let { password } = userDto;
+    const data = userDto;
+    if (password !== undefined) {
+      password = await encodePass(password);
+      console.log(222);
+      data.password = password;
+    }
+    return this.queryBuilder
       .update(UserInfoEntity)
       .set({
-        ...userDto,
+        ...data,
       })
       .where('id = :id', { id: userDto.id })
       .execute();
@@ -91,26 +87,40 @@ export class UserService {
       .where('user.username = :username', { username })
       .getOne();
   }
+  /**
+   * 通过id查找用户
+   * @param username
+   */
+  async getUserById(id: number) {
+    return await getRepository(UserInfoEntity)
+      .createQueryBuilder('user')
+      .where('user.id = :id', { id })
+      .getOne();
+  }
 
   /**
    * 查询用户列表
    */
   async getUserList(userDto: QueryUserDto) {
-    const whereCondition = [];
-    const conditionValues = {};
-    for (const key in userDto) {
-      if (!['page', 'prepage'].includes(key)) {
-        whereCondition.push(`user.${key} = :${key}`);
-        conditionValues[key] = userDto[key];
-      }
-    }
+    let whereCondition = '';
+    let conditionValues = {};
+    const { role } = userDto;
+    console.log(role);
 
+    if (role !== undefined) {
+      if (typeof role === 'object') {
+        whereCondition = 'user.role in (:role)';
+      } else {
+        whereCondition = 'user.role = :role';
+      }
+      conditionValues = { role };
+    }
     return await getRepository(UserInfoEntity)
       .createQueryBuilder('user')
-      .where(whereCondition.join(' and '), conditionValues)
-      .orderBy('user.update_time', 'DESC') // ASC
+      .where(whereCondition, conditionValues)
+      .orderBy('user.update_time', 'DESC')
+      .skip(userDto.prepage * (userDto.page - 1))
       .take(userDto.prepage && userDto.prepage)
-      .skip(userDto.prepage * (userDto.page - 1) || 0)
       .getManyAndCount();
   }
 
@@ -118,9 +128,9 @@ export class UserService {
    * 删除指定用户
    */
   async removeUser(id: number) {
-    return await this.queryBuilder
+    return await getRepository(UserInfoEntity)
+      .createQueryBuilder('user')
       .delete()
-      .from(UserInfoEntity)
       .where('id = :id', { id })
       .execute();
   }
