@@ -1,5 +1,7 @@
+import { ApiErrorCode } from 'src/common/exceptions/api.code.enum';
+import { ApiException } from 'src/common/exceptions/api.exception';
 import { RolesGuard } from './../../common/guards/role.guard';
-import { RoleEnum } from './../../common/constants/role';
+import { RoleEnum, RoleMap } from './../../common/constants/role';
 import { Roles } from './../../common/decorators/role.decorator';
 import {
   Body,
@@ -34,11 +36,24 @@ export class UserController {
   /**
    * 获取用户列表
    */
-  @Get()
-  @UseGuards(RolesGuard)
-  @Roles(RoleEnum.ADMIN)
+  @Get('list')
+  // @UseGuards(RolesGuard)
+  // @Roles(RoleEnum.ADMIN)
   async getUserList(@Query() userDto: QueryUserDto) {
-    return await this.userService.getUserList(userDto);
+    const result = await this.userService.getUserList(userDto);
+    const data = result[0].map((item) => {
+      delete item.password;
+      return item;
+    });
+    return { list: data, total: result[1] };
+  }
+
+  /**
+   * 获取用户角色列表
+   */
+  @Get('rolelist')
+  async getUserRoleList() {
+    return RoleMap;
   }
 
   /**
@@ -50,26 +65,29 @@ export class UserController {
   }
 
   /**
-   * 增加用户
-   */
-  @Post()
-  async addUser(@Body() userDto: CreateUserDto) {
-    return await this.userService.addUser(userDto);
-  }
-
-  /**
    * 更新用户
    */
   @Put()
   async updateUser(@Body() userDto: UpdateUserDto) {
+    const { id, username } = userDto;
+    let user = await this.userService.getUserById(id);
+    if (!user) {
+      throw new ApiException(ApiErrorCode.NOT_VALUABLE_USER_ID);
+    }
+    if (username !== undefined) {
+      user = await this.userService.getUserByName(username);
+      if (user) {
+        throw new ApiException(ApiErrorCode.USERNAME_REPEAT);
+      }
+    }
     return await this.userService.updateUser(userDto);
   }
 
   /**
    * 删除用户
    */
-  @Delete(':id') // Delete 只能用param？
-  async removeUser(@Param('id') id: string) {
+  @Delete()
+  async removeUser(@Body('id') id: number) {
     return await this.userService.removeUser(+id);
   }
 }
