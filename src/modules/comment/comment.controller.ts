@@ -78,8 +78,7 @@ export class CommentController {
    * 删除 Comment
    */
   @Delete()
-  async removeComment(@Body() CommentDto) {
-    await this.commentService.removeComment(CommentDto);
-    return true;
+  async removeComment(@Body('id') id: number) {
+    return await this.commentService.removeComment(+id);
   }
 }

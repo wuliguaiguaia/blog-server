@@ -64,8 +64,7 @@ export class MessageController {
    * 删除 message
    */
   @Delete()
-  async removeMessage(@Body() messageDto) {
-    await this.messageService.removeMessage(messageDto);
-    return true;
+  async removeMessage(@Body('id') id: number) {
+    return await this.messageService.removeMessage(+id);
   }
 }

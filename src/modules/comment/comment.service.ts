@@ -43,6 +43,7 @@ export class CommentService {
       .createQueryBuilder('comment')
       .leftJoinAndSelect('comment.article', 'article');
 
+    // TODO： 优化where
     let data = [];
     if (articleId) {
       if (isCheck !== undefined) {
@@ -104,8 +105,8 @@ export class CommentService {
   /**
    * 删除comment
    */
-  async removeComment({ id }) {
-    return getRepository(CommentEntity)
+  async removeComment(id: number) {
+    return await getRepository(CommentEntity)
       .createQueryBuilder()
       .delete()
       .from(CommentEntity)

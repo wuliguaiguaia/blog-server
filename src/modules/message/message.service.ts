@@ -53,7 +53,7 @@ export class MessageService {
   /**
    * 删除 message
    */
-  async removeMessage({ id }) {
+  async removeMessage(id: number) {
     return getRepository(MessageEntity)
       .createQueryBuilder()
       .delete()
