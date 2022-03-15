@@ -1,7 +1,7 @@
 import { ApiErrorCode } from 'src/common/exceptions/api.code.enum';
 import { ApiException } from 'src/common/exceptions/api.exception';
 import { RolesGuard } from './../../common/guards/role.guard';
-import { RoleEnum, RoleMap } from './../../common/constants/role';
+import { RoleEnum, RoleMap, authConfig } from './../../common/constants/role';
 import { Roles } from './../../common/decorators/role.decorator';
 import {
   Body,
@@ -16,20 +16,28 @@ import {
   Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto/user.dto';
+import { UpdateUserDto, QueryUserDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get('profile')
-  getProfile(@Request() req) {
+  async getProfile(@Request() req) {
     const { passport } = req.session;
     console.log(req.session);
     if (!passport?.user) {
       return null;
     }
-    const { id, role, username } = passport.user;
+    const { id } = passport.user;
+    const data = await this.userService.getUserById(id);
+    if (!data) {
+      throw new ApiException(
+        ApiErrorCode.TABLE_OPERATE_ERROR,
+        '当前用户不存在',
+      );
+    }
+    const { role, username } = data;
     return { id, role, username };
   }
 
@@ -53,7 +61,7 @@ export class UserController {
    */
   @Get('rolelist')
   async getUserRoleList() {
-    return RoleMap;
+    return { roleList: RoleMap, authConfig };
   }
 
   /**
