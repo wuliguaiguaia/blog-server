@@ -6,7 +6,7 @@ export const genId = (digits = 9) => {
   );
 };
 
-export const genFileName = (name) => {
+/* export const genFileName = (name) => {
   const [title, ...other] = name.split('.');
   return (
     title +
@@ -15,4 +15,4 @@ export const genFileName = (name) => {
     '.' +
     other.join('.')
   );
-};
+}; */

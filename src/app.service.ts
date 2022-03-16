@@ -1,8 +1,8 @@
-import { genFileName } from './common/utils/genId';
 import { Injectable } from '@nestjs/common';
 import * as config from 'config';
 import * as path from 'path';
 import * as fs from 'fs';
+import { md5 } from './common/utils';
 @Injectable()
 export class AppService {
   getHello(): string {
@@ -26,7 +26,10 @@ export class AppService {
       // 报错返回
       return { filePath: null };
     }
-    const fileName = genFileName(originalname);
+
+    const fileName = md5(buffer) + path.extname(originalname);
+    console.log(fileName);
+
     dir = path.join(dir, fileName);
     fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
     const realPath =
