@@ -42,7 +42,7 @@ export class AuthController {
     if (user) {
       throw new ApiException(ApiErrorCode.USERNAME_REPEAT);
     }
-    const pattern = /^[a-z0-8]{8,$/;
+    const pattern = /^[a-z0-8]{8,}$/;
     if (!pattern.test(password)) {
       throw new ApiException(
         ApiErrorCode.TABLE_OPERATE_ERROR,

@@ -1,4 +1,4 @@
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { saltOrRounds } from '../constants';
 /* saltOrRounds: 生成salt的迭代次数 */
 
