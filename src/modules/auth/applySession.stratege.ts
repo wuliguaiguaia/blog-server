@@ -12,8 +12,6 @@ export class SessionStrategy extends PassportStrategy(
     // console.log(req.session);
     const { passport } = req.session;
 
-    console.log(passport, '[[');
-
     if (!passport?.user) {
       throw new UnauthorizedException();
     }

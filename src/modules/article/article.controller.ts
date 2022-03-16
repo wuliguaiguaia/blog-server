@@ -1,3 +1,5 @@
+import { authConfig } from './../../common/constants/role';
+import { AuthGuard } from '@nestjs/passport';
 import {
   Body,
   Controller,
@@ -6,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { EntityManager, Transaction, TransactionManager } from 'typeorm';
 import { ArticleService } from './article.service';
@@ -16,6 +19,7 @@ import {
   QueryArticleListDto,
   QueryArticleDto,
 } from './dto/article.dto';
+import { Roles } from 'src/common/decorators/role.decorator';
 
 @Controller('article')
 export class ArticleController {
@@ -99,6 +103,8 @@ export class ArticleController {
    * 增加文章
    */
   @Post()
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.article.add)
   @Transaction()
   /* 可能出现两张表同时进行操作的情况
     因此开启事务事件：为了让同时进行的表操作要么一起完成，要么都失败
@@ -115,6 +121,8 @@ export class ArticleController {
    * 更新文章
    */
   @Put('/update')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.article.edit) /* 有已发布能更新的漏洞 */
   @Transaction()
   async updateArticle(
     @Body() articleDto: UpdateArticleDto,
@@ -128,6 +136,8 @@ export class ArticleController {
    * 软删除
    */
   @Put('/delete')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.article.delete)
   @Transaction()
   async removeArticle(
     @Body('id') id: number,
@@ -141,6 +151,8 @@ export class ArticleController {
    * 硬删除
    */
   @Delete()
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.article.delete)
   @Transaction()
   async forceRemoveArticle(
     @Body('id') id: number,
@@ -154,6 +166,8 @@ export class ArticleController {
    * 发表文章
    */
   @Put('/publish')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.article.publish)
   @Transaction()
   async publishArticle(
     @Body('id') id: number,

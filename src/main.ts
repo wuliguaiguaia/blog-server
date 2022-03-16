@@ -4,7 +4,7 @@ import { ValidationPipe } from './common/pipes/validation.pipe';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import * as config from 'config';
@@ -14,6 +14,7 @@ import * as redis from 'redis';
 import * as connectredis from 'connect-redis';
 import * as passport from 'passport';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { RolesGuard } from './common/guards/role.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
@@ -25,6 +26,8 @@ async function bootstrap() {
   app.useGlobalInterceptors(
     new ResponseInterceptor(app.get(WINSTON_MODULE_NEST_PROVIDER)),
   );
+  /* 对于混合应用程序，useGlobalGuards() 方法不会为网关和微服务设置守卫 ！！！ */
+  app.useGlobalGuards(new RolesGuard(new Reflector()));
 
   /**
    * redis 连接

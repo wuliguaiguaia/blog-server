@@ -13,7 +13,11 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { Roles } from 'src/common/decorators/role.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { authConfig } from './../../common/constants/role';
 
 @Controller('comment')
 export class CommentController {
@@ -46,6 +50,8 @@ export class CommentController {
    * 获取Comment列表
    */
   @Get('list/all')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.comment)
   async getCommentList(@Query() commentDto: AllQueryCommentDto) {
     const [list, total] = await this.commentService.getCommentList(commentDto);
     return { list, total };
@@ -62,6 +68,8 @@ export class CommentController {
 
   /* 已读留言 */
   @Put('/read')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.comment)
   async readComment(@Body() CommentDto: UpdateCommentDto) {
     await this.commentService.readComment(CommentDto);
     return true;
@@ -69,6 +77,8 @@ export class CommentController {
 
   /* 审核留言 */
   @Put('/check')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.comment)
   async checkComment(@Body() CommentDto: UpdateCommentDto) {
     await this.commentService.checkComment(CommentDto);
     return true;
@@ -78,6 +88,8 @@ export class CommentController {
    * 删除 Comment
    */
   @Delete()
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.comment)
   async removeComment(@Body('id') id: number) {
     return await this.commentService.removeComment(+id);
   }

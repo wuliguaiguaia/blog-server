@@ -1,3 +1,4 @@
+import { authConfig } from './../../common/constants/role';
 import { Transaction, TransactionManager, EntityManager } from 'typeorm';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
@@ -11,12 +12,11 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorator';
-import { RoleEnum } from 'src/common/constants/role';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('category')
+@UseGuards(AuthGuard('applySession'))
 export class CategoryController {
   // logger: Logger;
   constructor(private readonly cateogoryService: CategoryService) {}
@@ -25,10 +25,8 @@ export class CategoryController {
    * 获取分类列表
    */
   @Get('/list')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(RoleEnum.ADMIN)
   async getCategoryList(@Req() req) {
-    console.log(req.user);
+    // console.log(req.user);
     const [list, total] = await this.cateogoryService.getCategoryList();
     return { list, total };
   }
@@ -37,6 +35,7 @@ export class CategoryController {
    * 增加分类
    */
   @Post()
+  @Roles(authConfig.category.add)
   async addCategory(@Body() categoryDto: CreateCategoryDto) {
     const r = await this.cateogoryService.addCategory(categoryDto);
     if (r.raw) {
@@ -50,6 +49,7 @@ export class CategoryController {
    * 更新分类
    */
   @Put()
+  @Roles(authConfig.category.edit)
   async updateCategory(@Body() categoryDto: UpdateCategoryDto) {
     return await this.cateogoryService.updateCategory(categoryDto);
   }
@@ -59,6 +59,7 @@ export class CategoryController {
    */
   @Delete()
   @Transaction()
+  @Roles(authConfig.category.delete)
   async removeCategory(
     @Body('id') id: number,
     @TransactionManager() manager: EntityManager,

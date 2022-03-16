@@ -12,8 +12,8 @@ export class RolesGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
     const roles = this.reflector.get<number[]>('roles', context.getHandler()); // 从控制器注解中得到的角色组信息
+
     if (!roles || roles.length === 0) return true;
-    console.log(roles);
 
     const request = context.switchToHttp().getRequest();
 

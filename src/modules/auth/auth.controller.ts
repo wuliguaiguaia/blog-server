@@ -4,6 +4,7 @@ import { ApiErrorCode } from './../../common/exceptions/api.code.enum';
 import { ApiException } from './../../common/exceptions/api.exception';
 import { LoginDto } from './../user/dto/user.dto';
 import { UserService } from './../user/user.service';
+import { AuthGuard } from '@nestjs/passport';
 import {
   Body,
   Controller,
@@ -13,7 +14,6 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 export class AuthController {
@@ -58,7 +58,7 @@ export class AuthController {
     req.session.destroy((err) => {
       // 注销
       if (err) {
-        throw new ApiException(ApiErrorCode.SYSTEM_EXCEPTION_ERROR);
+        throw new ApiException(ApiErrorCode.SYSTEM_EXCEPTION_ERROR, '登出失败');
       }
     });
     return null;

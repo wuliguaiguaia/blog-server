@@ -1,7 +1,9 @@
 import { CommitService } from './commit.service';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('commit')
+@UseGuards(AuthGuard('applySession'))
 export class CommitController {
   constructor(private readonly commitService: CommitService) {}
 

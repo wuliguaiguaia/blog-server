@@ -9,46 +9,28 @@ export enum RoleEnum {
 }
 
 export const RoleMap = {
-  [RoleEnum.SUPER]: '超级管理员',
-  [RoleEnum.ADMIN]: '管理员',
   [RoleEnum.NORMAL]: '普通用户',
+  [RoleEnum.ADMIN]: '管理员',
+  [RoleEnum.SUPER]: '超级管理员',
 };
 
 /**
  * 权限控制
  */
-export const authConfig = [
-  /* 未登录 */
-  {},
-  /* role 1 */
-  {},
-  /* role 2 */
-  {
-    analysis: true,
-    article: {
-      add: true,
-      edit: true,
-    },
-    category: {
-      add: true,
-    },
+export const authConfig = {
+  analysis: [RoleEnum.ADMIN, RoleEnum.SUPER],
+  comment: [RoleEnum.SUPER],
+  message: [RoleEnum.SUPER],
+  user: [RoleEnum.SUPER],
+  article: {
+    add: [RoleEnum.ADMIN, RoleEnum.SUPER],
+    edit: [RoleEnum.ADMIN, RoleEnum.SUPER],
+    publish: [RoleEnum.SUPER],
+    delete: [RoleEnum.SUPER],
   },
-  /* role 3 */
-  {
-    analysis: true,
-    comment: true,
-    message: true,
-    user: true,
-    article: {
-      add: true,
-      edit: true,
-      publish: true,
-      delete: true,
-    },
-    category: {
-      add: true,
-      edit: true,
-      delete: true,
-    },
+  category: {
+    add: [RoleEnum.ADMIN, RoleEnum.SUPER],
+    edit: [RoleEnum.SUPER],
+    delete: [RoleEnum.SUPER],
   },
-];
+};
