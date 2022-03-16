@@ -25,7 +25,7 @@ export class UserController {
   @Get('profile')
   async getProfile(@Request() req) {
     const { passport } = req.session;
-    console.log(req.session);
+    // console.log(req.session);
     if (!passport?.user) {
       return null;
     }

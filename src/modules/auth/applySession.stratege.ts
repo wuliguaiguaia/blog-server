@@ -9,7 +9,7 @@ export class SessionStrategy extends PassportStrategy(
 ) {
   async validate(@Request() req): Promise<any> {
     // 注意passport的session数据结构，使用req.session.passport.user来访问 user session
-    console.log(req.session);
+    // console.log(req.session);
     const { passport } = req.session;
 
     console.log(passport, '[[');

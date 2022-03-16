@@ -105,7 +105,6 @@ export class UserService {
     let whereCondition = '';
     let conditionValues = {};
     const { role } = userDto;
-    console.log(role);
 
     if (role !== undefined) {
       if (typeof role === 'object') {
