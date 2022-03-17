@@ -16,7 +16,6 @@ import { Roles } from 'src/common/decorators/role.decorator';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('category')
-@UseGuards(AuthGuard('applySession'))
 export class CategoryController {
   // logger: Logger;
   constructor(private readonly cateogoryService: CategoryService) {}
@@ -36,6 +35,7 @@ export class CategoryController {
    */
   @Post()
   @Roles(authConfig.category.add)
+  @UseGuards(AuthGuard('applySession'))
   async addCategory(@Body() categoryDto: CreateCategoryDto) {
     const r = await this.cateogoryService.addCategory(categoryDto);
     if (r.raw) {
@@ -50,6 +50,7 @@ export class CategoryController {
    */
   @Put()
   @Roles(authConfig.category.edit)
+  @UseGuards(AuthGuard('applySession'))
   async updateCategory(@Body() categoryDto: UpdateCategoryDto) {
     return await this.cateogoryService.updateCategory(categoryDto);
   }
@@ -60,6 +61,7 @@ export class CategoryController {
   @Delete()
   @Transaction()
   @Roles(authConfig.category.delete)
+  @UseGuards(AuthGuard('applySession'))
   async removeCategory(
     @Body('id') id: number,
     @TransactionManager() manager: EntityManager,
