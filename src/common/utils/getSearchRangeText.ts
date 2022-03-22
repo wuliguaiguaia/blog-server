@@ -6,7 +6,6 @@ export default function getSearchRangeText(content: string, words): string {
   const matches = content.match(pattern);
   if (!matches) return content.substr(0, count);
   let prev = matches[1];
-  console.log(prev.length, prev);
 
   while (prev.length > prevMaxCount) {
     const prevPattern = /[^，,]+(.+)/;

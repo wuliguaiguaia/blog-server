@@ -1,5 +1,5 @@
 import { AuthService } from './auth.service';
-// import { MyLogger } from './../../common/utils/logger.service';
+import { MyLogger } from './../../common/utils/logger.service';
 import { ApiErrorCode } from './../../common/exceptions/api.code.enum';
 import { ApiException } from './../../common/exceptions/api.exception';
 import { LoginDto } from './../user/dto/user.dto';
@@ -20,19 +20,20 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly logger: MyLogger,
   ) {}
 
   @UseGuards(AuthGuard('local'))
   @Post('login')
   async login(@Request() req) {
-    console.log('JWT验证 - Step 1: 用户请求登录 req.user');
-    return this.authService.login(req.session.passport.user);
+    this.logger.log(`JWT验证 - Step 1: 用户请求登录 `, req.user, 'login');
+    return this.authService.login(/* req.session.passport.user */ req.user);
   }
 
   @UseGuards(AuthGuard('applySession'))
   @Get('profile')
   getProfile(@Request() req) {
-    return true;
+    return req.user;
   }
 
   @Post('register')

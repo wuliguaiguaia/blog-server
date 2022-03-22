@@ -479,8 +479,6 @@ export class ArticleService {
       });
     }
 
-    console.log(JSON.stringify(qbody, null, 2));
-
     const { body } = await es.search({
       from: prepage * (page - 1) || 0,
       size: prepage && prepage,

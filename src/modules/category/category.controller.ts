@@ -9,7 +9,6 @@ import {
   Get,
   Post,
   Put,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/role.decorator';
@@ -24,8 +23,7 @@ export class CategoryController {
    * 获取分类列表
    */
   @Get('/list')
-  async getCategoryList(@Req() req) {
-    // console.log(req.user);
+  async getCategoryList() {
     const [list, total] = await this.cateogoryService.getCategoryList();
     return { list, total };
   }

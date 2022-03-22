@@ -16,8 +16,8 @@ export class AuthService {
     const user = await this.userService.getUserByName(username);
     if (!user) return null;
     if (comparePass(userDto.password, user.password)) {
-      const { password, ...result } = user;
-      return result;
+      const { id, username, role } = user;
+      return { id, username, role };
     }
     return null;
   }

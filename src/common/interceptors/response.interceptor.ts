@@ -36,7 +36,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
     const errNo = ApiErrorCode.SUCCESS;
 
     const req: Request = context.switchToHttp().getRequest();
-    const { url, method, query, body, params } = req;
+    const { url, method, query, body, params, user } = req;
     const logId = this.getLogid();
 
     return next.handle().pipe(
@@ -49,7 +49,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         errStr: ApiErrorMap[errNo],
       })),
       tap((data) => {
-        const msg = { logId, url, method, query, params, body, data };
+        const msg = { logId, url, method, query, params, body, data, user };
         this.logger.log(msg, 'ResponseInterceptor');
       }),
     );

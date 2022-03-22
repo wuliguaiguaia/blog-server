@@ -2,11 +2,9 @@ import { clsMiddleware } from './common/middleware/cls.middleware';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { ValidationPipe } from './common/pipes/validation.pipe';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import * as cookieParser from 'cookie-parser';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { join } from 'path';
 import * as config from 'config';
 import * as helmet from 'helmet';
 import * as session from 'express-session';
@@ -17,7 +15,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { RolesGuard } from './common/guards/role.guard';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {});
+  const app = await NestFactory.create(AppModule, {});
+
   app.setGlobalPrefix('api/blog');
   app.useGlobalFilters(
     new HttpExceptionFilter(app.get(WINSTON_MODULE_NEST_PROVIDER)),
@@ -121,7 +120,7 @@ async function bootstrap() {
   // app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
   // [winston] Unknown logger level: 231321
 
-  app.useStaticAssets(join(__dirname, '..', 'public')); /* 存储静态文件 */
+  // app.useStaticAssets(join(__dirname, '..', 'public')); /* 存储静态文件 */
 
   await app.listen(config.port);
 }

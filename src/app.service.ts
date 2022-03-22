@@ -3,8 +3,10 @@ import * as config from 'config';
 import * as path from 'path';
 import * as fs from 'fs';
 import { md5 } from './common/utils';
+import { MyLogger } from './common/utils/logger.service';
 @Injectable()
 export class AppService {
+  constructor(private readonly logger: MyLogger) {}
   getHello(): string {
     return 'Hello World!';
   }
@@ -28,8 +30,7 @@ export class AppService {
     }
 
     const fileName = md5(buffer) + path.extname(originalname);
-    console.log(fileName);
-
+    this.logger.log('upload', fileName);
     dir = path.join(dir, fileName);
     fs.writeFileSync(dir, buffer, 'binary'); // 默认binary
     const realPath =

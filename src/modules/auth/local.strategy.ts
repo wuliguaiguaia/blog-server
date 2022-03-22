@@ -20,7 +20,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   ): Promise<any> {
     const user = await this.authService.validateUser({ username, password });
     if (!user) {
-      console.log(2222);
       throw new ApiException(
         ApiErrorCode.TABLE_OPERATE_ERROR,
         '用户名或密码错误',

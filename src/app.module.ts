@@ -1,4 +1,4 @@
-// import { LoggerMiddleware } from './common/middleware/logger.middleware';
+import { MyLogger } from './common/utils/logger.service';
 import {
   WinstonModule,
   utilities as nestWinstonModuleUtilities,
@@ -18,6 +18,8 @@ import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as config from 'config';
 import * as path from 'path';
 import * as winston from 'winston';
+import { SqlLogger } from './common/utils/sqlLogger.service';
+import { logDefaultOptions } from './common/constants';
 
 @Global() // 全局模块
 @Module({
@@ -40,7 +42,7 @@ import * as winston from 'winston';
         synchronize: config.get('db.synchronize'), // true: 每次运行应用程序时实体都将与数据库同步
         // logging: config.get('db.logging'),
         logging: true,
-        logger: 'file',
+        logger: new SqlLogger(),
       }),
     }),
 
@@ -56,32 +58,23 @@ import * as winston from 'winston';
       ),
       transports: [
         new DailyRotateFile({
-          filename: path.join(
-            __dirname,
-            '..',
-            config.logs,
-            'access-%DATE%.log',
-          ),
-          datePattern: 'YYYY-MM-DD',
-          json: true,
+          filename: path.join(process.cwd(), config.logs, 'access-%DATE%.log'),
           level: 'info',
-          format: winston.format.combine(winston.format.prettyPrint()),
+          ...logDefaultOptions,
         }),
         new DailyRotateFile({
           filename: path.join(
-            __dirname,
-            '..',
+            process.cwd(),
             config.logs,
             'access-wf-%DATE%.log',
           ),
-          datePattern: 'YYYY-MM-DD',
-          json: false,
           level: 'error',
-          format: winston.format.combine(winston.format.prettyPrint()),
+          ...logDefaultOptions,
         }),
-        // 保留标准输出
-        new winston.transports.Console(),
-      ],
+        // 保留标准输出    控制台输出  pm2 log来源
+        process.env.NODE_ENV !== 'production' &&
+          new winston.transports.Console(),
+      ].filter(Boolean),
     }),
     UserModule,
     ArticleModule,
@@ -92,7 +85,7 @@ import * as winston from 'winston';
     CommentModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, MyLogger],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

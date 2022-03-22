@@ -17,7 +17,7 @@ export class RolesGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
 
-    const user = request.session.passport.user;
+    const user = request.session.passport.user; // req.user 也可以
 
     if (!user) throw new ApiException(ApiErrorCode.NOT_LOGIN);
 

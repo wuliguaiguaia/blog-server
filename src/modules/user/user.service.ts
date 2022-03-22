@@ -54,7 +54,6 @@ export class UserService {
     const data = userDto;
     if (password !== undefined) {
       password = await encodePass(password);
-      console.log(222);
       data.password = password;
     }
     return this.queryBuilder

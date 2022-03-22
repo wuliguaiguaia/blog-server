@@ -1,3 +1,4 @@
+import { MyLogger } from './../../common/utils/logger.service';
 import { LocalStrategy } from './local.strategy';
 import { UserModule } from './../user/user.module';
 import { AuthController } from './auth.controller';
@@ -20,7 +21,12 @@ import { SessionStrategy } from './applySession.stratege';
     }), */
   ],
   controllers: [AuthController],
-  providers: [AuthService, SessionStrategy, LocalStrategy /* JwtStrategy */],
+  providers: [
+    AuthService,
+    SessionStrategy,
+    LocalStrategy /* JwtStrategy */,
+    MyLogger,
+  ],
   exports: [],
 })
 export class AuthModule {}

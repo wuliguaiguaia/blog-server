@@ -19,8 +19,6 @@ const insert = async (body) => {
   });
 };
 const update = async (body) => {
-  console.log(body.id);
-
   return await client.update({
     id: body.id,
     index,
