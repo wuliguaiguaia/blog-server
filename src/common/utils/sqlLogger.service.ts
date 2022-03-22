@@ -34,7 +34,7 @@ export class SqlLogger implements Logger {
         }),
         process.env.NODE_ENV !== 'production' &&
           new winston.transports.Console(),
-      ],
+      ].filter(Boolean),
     });
   }
   getFormatMessage({
