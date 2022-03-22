@@ -80,5 +80,6 @@ export class SqlLogger implements Logger {
   }
   log(level: 'log' | 'info' | 'warn', message: any, queryRunner?: QueryRunner) {
     // this.logger.info(level, message);
+    console.log(level, message);
   }
 }
