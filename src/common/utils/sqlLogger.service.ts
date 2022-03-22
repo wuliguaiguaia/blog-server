@@ -18,7 +18,7 @@ export class SqlLogger implements Logger {
       level: 'info',
       exitOnError: false,
       format: winston.format.combine(
-        winston.format.timestamp({ format: new Date().toLocaleString() }),
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         nestWinstonModuleUtilities.format.nestLike('柠檬树下你和我'),
       ),
       transports: [
