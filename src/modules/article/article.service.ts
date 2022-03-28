@@ -51,7 +51,10 @@ export class ArticleService {
         const one = await manager.findOne(CategoryEntity, {
           id: +id,
         });
-        realCategories.push(one);
+        realCategories.push({
+          id: one.id,
+          name: one.name,
+        });
       }
     }
 
@@ -68,6 +71,8 @@ export class ArticleService {
     articleContent.content = content;
     article.content = articleContent;
     articleContent.id = genId(); // cascade 自动保存相关对象
+    articleContent.createTime = Date.now();
+    articleContent.updateTime = Date.now();
 
     /* mysql save */
     const data = await manager.save(ArticleEntity, article);
@@ -146,47 +151,10 @@ export class ArticleService {
   }
 
   /**
-   * 根据多个类型查询文章 【已废弃】
-   * @param articleDto
-   */
-  async getArticleByCategory(articleDto) {
-    const { categories } = articleDto;
-    let articles = await getRepository(CategoryEntity).findByIds(
-      categories.map((item) => +item),
-      {
-        relations: ['articles'],
-      },
-    );
-    const set = new Set();
-    articles = articles
-      .reduce((res, item) => {
-        const { articles } = item;
-        articles.forEach((item) => {
-          if (!set.has(item.id)) {
-            res.push(item);
-          }
-          set.add(item.id);
-        });
-        return res;
-      }, [])
-      .sort(
-        (item1, item2) =>
-          new Date(item2.createTime).getTime() -
-          new Date(item1.createTime).getTime(),
-      );
-    const count = articles.length;
-    const list = articles.splice(
-      articleDto.prepage * (articleDto.page - 1) || 0,
-      articleDto.prepage ? +articleDto.prepage : count,
-    );
-    return [list, count];
-  }
-
-  /**
    * 根据某类型查询文章携带分类，es版
    * @param category
    */
-  async getArticleByCategory2(category: number) {
+  async getArticleByCategory(category: number) {
     const data = await es.search({
       body: {
         query: {
@@ -227,6 +195,7 @@ export class ArticleService {
     if (!article) {
       throw new ApiException(ApiErrorCode.NO_ARTICLE);
     }
+    const date = Date.now();
 
     /* 分类存储 */
     const realCategories = [];
@@ -235,22 +204,25 @@ export class ArticleService {
         const one = await manager.findOne(CategoryEntity, {
           id: +id,
         });
-        realCategories.push(one);
+        realCategories.push({ id: one.id, name: one.name });
       }
       article.categories = realCategories;
     }
     if (keywords !== undefined) article.keywords = keywords;
     if (title !== undefined) article.title = title;
-    if (content !== undefined) article.content.content = content;
+    if (content !== undefined) {
+      article.content.content = content;
+      article.content.updateTime = date;
+    }
 
-    article.updateTime = Date.now();
+    article.updateTime = date;
 
     /* mysql save */
     const newData = await manager.save(ArticleEntity, article);
 
     /* es save */
     await es.update(newData);
-    return { id: id, updateTime: newData.updateTime };
+    return { id: id, updateTime: date };
   }
 
   /**

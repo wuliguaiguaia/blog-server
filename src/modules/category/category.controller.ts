@@ -39,6 +39,7 @@ export class CategoryController {
   @Roles(authConfig.category.add)
   @UseGuards(AuthGuard('applySession'))
   async addCategory(@Body() categoryDto: CreateCategoryDto) {
+    categoryDto.name = categoryDto.name.trim();
     const r = await this.cateogoryService.addCategory(categoryDto);
     if (r.raw) {
       return {
@@ -54,6 +55,7 @@ export class CategoryController {
   @Roles(authConfig.category.edit)
   @UseGuards(AuthGuard('applySession'))
   async updateCategory(@Body() categoryDto: UpdateCategoryDto) {
+    categoryDto.name = categoryDto.name.trim();
     return await this.cateogoryService.updateCategory(categoryDto);
   }
 
@@ -68,8 +70,7 @@ export class CategoryController {
     @Body('id') id: number,
     @TransactionManager() manager: EntityManager,
   ) {
-    const articles = await this.articleService.getArticleByCategory2(id);
-
+    const articles = await this.articleService.getArticleByCategory(id);
     const onlyIds = [];
     const andArticles = [];
     articles.forEach((item) => {

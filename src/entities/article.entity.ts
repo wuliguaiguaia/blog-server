@@ -15,25 +15,12 @@ import { MysqlDataType } from './../common/constants/database/mysql';
 import { CategoryEntity } from './category.entity';
 import { ArticleContentEntity } from './article_content.entity';
 import { CommentEntity } from './comment.entity';
+import { BaseEntity } from './base-entity/base.entity';
 
 @Entity('article')
-export class ArticleEntity {
+export class ArticleEntity extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({
-    type: MysqlDataType.BIGINT,
-    precision: 13,
-    comment: '创建时间',
-  })
-  createTime: number;
-
-  @Column({
-    type: MysqlDataType.BIGINT,
-    precision: 13,
-    comment: '更新时间',
-  })
-  updateTime: number;
 
   @Column({
     type: MysqlDataType.INT,

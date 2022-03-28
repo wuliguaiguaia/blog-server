@@ -46,6 +46,8 @@ export class CategoryService {
       .into(CategoryEntity)
       .values({
         ...categoryDto,
+        createTime: Date.now(),
+        updateTime: Date.now(),
       })
       .execute();
   }
@@ -71,17 +73,14 @@ export class CategoryService {
       values: { name: categoryDto.name, id: categoryDto.id },
     });
     if (list.length) {
-      throw new Error('分类名重复');
-      // throw new ApiException(
-      //   ApiErrorCode.TABLE_OPERATE_ERROR,
-      //   '分类手机号不能重复',
-      // );
+      throw new ApiException(ApiErrorCode.CATEGORY_REPEAT);
     }
 
     return await this.queryBuilder
       .update(CategoryEntity)
       .set({
         ...categoryDto,
+        updateTime: Date.now(),
       })
       .where('id = :id', { id: categoryDto.id })
       .execute();

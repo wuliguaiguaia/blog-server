@@ -15,6 +15,7 @@ export class CommentService {
     const { articleId } = commentDto;
     const article = await getRepository(ArticleEntity).findOne(articleId);
     commentDto.article = article;
+    commentDto.createTime = Date.now();
     return getRepository(CommentEntity).save(commentDto);
   }
 

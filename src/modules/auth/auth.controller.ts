@@ -38,6 +38,7 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() userDto: LoginDto) {
+    userDto.username = userDto.username.trim();
     const { username, password } = userDto;
     const user = await this.userService.getUserByName(username);
     if (user) {

@@ -31,7 +31,12 @@ export class UserService {
   async addUser(userDto: CreateUserDto) {
     let { password } = userDto;
     password = await encodePass(password);
-    return getRepository(UserInfoEntity).save({ ...userDto, password });
+    return getRepository(UserInfoEntity).save({
+      ...userDto,
+      password,
+      createTime: Date.now(),
+      updateTime: Date.now(),
+    });
   }
 
   /**
@@ -60,6 +65,7 @@ export class UserService {
       .update(UserInfoEntity)
       .set({
         ...data,
+        updateTime: Date.now(),
       })
       .where('id = :id', { id: userDto.id })
       .execute();
@@ -116,7 +122,7 @@ export class UserService {
     return await getRepository(UserInfoEntity)
       .createQueryBuilder('user')
       .where(whereCondition, conditionValues)
-      .orderBy('user.update_time', 'DESC')
+      .orderBy('user.updateTime', 'DESC')
       .skip(userDto.prepage * (userDto.page - 1))
       .take(userDto.prepage && userDto.prepage)
       .getManyAndCount();

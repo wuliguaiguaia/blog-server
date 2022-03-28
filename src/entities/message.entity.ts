@@ -1,10 +1,5 @@
 import { MysqlDataType } from '../common/constants/database/mysql';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 /**
  * 建议
@@ -14,11 +9,12 @@ export class MessageEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn({
-    name: 'create_time',
+  @Column({
+    type: MysqlDataType.BIGINT,
+    precision: 13,
     comment: '创建时间',
   })
-  createTime: Date;
+  createTime: number;
 
   @Column({
     type: MysqlDataType.INT,

@@ -113,6 +113,7 @@ export class ArticleController {
     @Body() articleDto: CreateArticleDto,
     @TransactionManager() manager: EntityManager,
   ) {
+    articleDto.title = articleDto.title.trim();
     await this.commitService.addCommit(manager);
     return await this.articleService.addArticle(articleDto, manager);
   }
@@ -128,6 +129,7 @@ export class ArticleController {
     @Body() articleDto: UpdateArticleDto,
     @TransactionManager() manager: EntityManager,
   ) {
+    articleDto.title = articleDto.title.trim();
     await this.commitService.addCommit(manager);
     return await this.articleService.updateArticle(articleDto, manager);
   }

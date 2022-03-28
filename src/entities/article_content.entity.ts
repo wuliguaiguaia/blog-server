@@ -1,6 +1,6 @@
 import { ArticleEntity } from './article.entity';
 import { BaseEntity } from './base-entity/base.entity';
-import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, OneToOne } from 'typeorm';
 import { MysqlDataType } from './../common/constants/database/mysql';
 
 @Entity('article_content')

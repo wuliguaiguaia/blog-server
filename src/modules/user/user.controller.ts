@@ -79,6 +79,7 @@ export class UserController {
   @UseGuards(AuthGuard('applySession'))
   @Roles(authConfig.user)
   async updateUser(@Body() userDto: UpdateUserDto) {
+    userDto.username = userDto.username.trim();
     const { id, username } = userDto;
     let user = await this.userService.getUserById(id);
     if (!user) {

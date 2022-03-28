@@ -1,33 +1,28 @@
-import { MysqlDataType } from './../../common/constants/database/mysql';
 /**
  * 表实体基类
  * 嵌入式实体
  */
 
-import {
-  CreateDateColumn,
-  UpdateDateColumn,
-  Column,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { MysqlDataType } from './../../common/constants/database/mysql';
 
-// abstract
 export abstract class BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn({
-    // 自动设置为实体的插入时间。 不需要在此列中手动写入值，该值会自动设置
-    name: 'create_time',
+  @Column({
+    type: MysqlDataType.BIGINT,
+    precision: 13,
     comment: '创建时间',
   })
-  createTime: Date;
+  createTime: number;
 
-  @UpdateDateColumn({
-    name: 'update_time',
+  @Column({
+    type: MysqlDataType.BIGINT,
+    precision: 13,
     comment: '更新时间',
   })
-  updateTime: Date;
+  updateTime: number;
 
   @Column({
     type: MysqlDataType.INT,

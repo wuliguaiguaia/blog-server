@@ -11,6 +11,7 @@ export class MessageService {
    * 增加message
    */
   async addMessage(messageDto) {
+    messageDto.createTime = Date.now();
     return getRepository(MessageEntity).save(messageDto);
   }
 
