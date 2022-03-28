@@ -14,6 +14,9 @@ export enum ApiErrorCode {
 
   SYSTEM_EXCEPTION_ERROR = 110001,
   TABLE_OPERATE_ERROR = 110002,
+
+  NO_DATA_CHANGE = 12001,
+  NO_ARTICLE = 12002,
 }
 
 export const ApiErrorMap = {
@@ -28,4 +31,7 @@ export const ApiErrorMap = {
 
   [ApiErrorCode.SYSTEM_EXCEPTION_ERROR]: '系统异常',
   [ApiErrorCode.TABLE_OPERATE_ERROR]: '数据库操作异常',
+
+  [ApiErrorCode.NO_DATA_CHANGE]: '无内容修改',
+  [ApiErrorCode.NO_ARTICLE]: '文章不存在或已删除',
 };

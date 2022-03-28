@@ -6,7 +6,7 @@ import * as config from 'config';
 import * as winston from 'winston';
 import * as path from 'path';
 import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
-import getContext from './getContext';
+import getContext from './base-logger';
 /* 
  记录 sql log
  包括慢查询

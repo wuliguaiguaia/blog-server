@@ -1,3 +1,4 @@
+import { ArticleService } from './../article/article.service';
 import { authConfig } from './../../common/constants/role';
 import { Transaction, TransactionManager, EntityManager } from 'typeorm';
 import { CategoryService } from './category.service';
@@ -17,7 +18,10 @@ import { AuthGuard } from '@nestjs/passport';
 @Controller('category')
 export class CategoryController {
   // logger: Logger;
-  constructor(private readonly cateogoryService: CategoryService) {}
+  constructor(
+    private readonly cateogoryService: CategoryService,
+    private readonly articleService: ArticleService,
+  ) {}
 
   /**
    * 获取分类列表
@@ -64,6 +68,35 @@ export class CategoryController {
     @Body('id') id: number,
     @TransactionManager() manager: EntityManager,
   ) {
+    const articles = await this.articleService.getArticleByCategory2(id);
+
+    const onlyIds = [];
+    const andArticles = [];
+    articles.forEach((item) => {
+      const {
+        _source: { categories, id: _id },
+      } = item;
+      if (categories.length === 1) {
+        onlyIds.push(_id);
+      } else {
+        andArticles.push({ categories, id: _id });
+      }
+    });
+    console.log(onlyIds, andArticles);
+    for (const i of onlyIds) {
+      await this.articleService.forceRemoveArticle(i, manager);
+    }
+
+    for (const item of andArticles) {
+      const { categories, id: _id } = item;
+      let cates = categories.filter((i) => i.id !== id);
+      cates = cates.map((i) => i.id);
+      await this.articleService.updateArticle(
+        { id: _id, categories: cates },
+        manager,
+      );
+    }
+
     return await this.cateogoryService.removeCategory(+id, manager);
   }
 }

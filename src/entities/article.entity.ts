@@ -7,24 +7,46 @@ import {
   Entity,
   JoinColumn,
   ManyToMany,
-  ManyToOne,
   OneToMany,
   OneToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { MysqlDataType } from './../common/constants/database/mysql';
-import { UserInfoEntity } from './user.entity';
 import { CategoryEntity } from './category.entity';
-import { BaseEntity } from './base-entity/base.entity';
 import { ArticleContentEntity } from './article_content.entity';
 import { CommentEntity } from './comment.entity';
 
 @Entity('article')
-export class ArticleEntity extends BaseEntity {
+export class ArticleEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({
+    type: MysqlDataType.BIGINT,
+    precision: 13,
+    comment: '创建时间',
+  })
+  createTime: number;
+
+  @Column({
+    type: MysqlDataType.BIGINT,
+    precision: 13,
+    comment: '更新时间',
+  })
+  updateTime: number;
+
+  @Column({
+    type: MysqlDataType.INT,
+    default: 0,
+    comment: '是否失效',
+  })
+  deleted: number;
+
   @Column({
     type: MysqlDataType.VARCHAR,
     length: 100,
     nullable: false,
-    unique: true,
+    unique: false,
     comment: '文章名',
   })
   title: string;
@@ -37,6 +59,7 @@ export class ArticleEntity extends BaseEntity {
   })
   keywords: string;
 
+  @JoinColumn()
   @OneToOne(() => ArticleContentEntity, (content) => content.article, {
     cascade: true, // 创建时同时更新到content
   })

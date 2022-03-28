@@ -49,13 +49,13 @@ export class QueryArticleDto {
 }
 
 export class UpdateArticleDto extends QueryArticleDto {
-  title: string;
+  title?: string;
 
-  categories: string[];
+  categories?: string[];
 
-  keywords: string;
+  keywords?: string;
 
-  content: string;
+  content?: string;
 
   desc?: string;
 }

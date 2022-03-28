@@ -18,6 +18,6 @@ export class ArticleContentEntity extends BaseEntity {
     onDelete: 'CASCADE', // article被删除，content一起被删除
     // onUpdate: 'CASCADE',
   })
-  @JoinColumn()
+  // @JoinColumn()
   article: ArticleEntity;
 }

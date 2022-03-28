@@ -1,4 +1,4 @@
-import getContext from './getContext';
+import getContext from './base-logger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { LoggerService, Injectable, Inject } from '@nestjs/common';
 

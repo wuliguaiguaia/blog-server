@@ -14,6 +14,7 @@ import {
   getRepository,
   EntityManager,
 } from 'typeorm';
+import { ApiErrorCode } from 'src/common/exceptions/api.code.enum';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArticleEntity } from 'src/entities/article.entity';
 import { MessageEntity } from 'src/entities/message.entity';
@@ -59,6 +60,8 @@ export class ArticleService {
     article.id = genId();
     article.keywords = keywords;
     article.title = title;
+    article.createTime = Date.now();
+    article.updateTime = Date.now();
 
     /* 内容存储 */
     const articleContent = new ArticleContentEntity();
@@ -111,7 +114,7 @@ export class ArticleService {
       hits: { total, hits },
     } = body;
     if (total.value === 0) {
-      throw new ApiException(404, '文章不存在或已删除');
+      throw new ApiException(ApiErrorCode.NO_ARTICLE);
     }
     return hits[0];
   }
@@ -119,6 +122,7 @@ export class ArticleService {
   /**
    * 获取单个文章详情 1.0
    * @param query.id 文章id
+   * TODO:可修改为 es
    */
   async getArticleById(query) {
     const { id } = query;
@@ -129,7 +133,7 @@ export class ArticleService {
       .where('article.id = :id', { id: +id })
       .getOne();
     if (!data) {
-      throw new ApiException(404, '文章不存在或已删除');
+      throw new ApiException(ApiErrorCode.NO_ARTICLE);
     }
     const { categories, content } = data;
     const categoriesMap = categories.map(({ id, name }) => ({ id, name }));
@@ -179,10 +183,39 @@ export class ArticleService {
   }
 
   /**
+   * 根据某类型查询文章携带分类，es版
+   * @param category
+   */
+  async getArticleByCategory2(category: number) {
+    const data = await es.search({
+      body: {
+        query: {
+          bool: {
+            should: [
+              {
+                match: {
+                  'categories.id': category,
+                },
+              },
+            ],
+          },
+        },
+      },
+    });
+    const {
+      hits: { hits },
+    } = data.body;
+    return hits;
+  }
+
+  /**
    * 更新文章
    */
   async updateArticle(articleDto: UpdateArticleDto, manager) {
     const { title, categories = [], keywords, content, id } = articleDto;
+    if (!title && !categories?.length && !keywords && !content) {
+      throw new ApiException(ApiErrorCode.NO_DATA_CHANGE);
+    }
     const article = await manager.findOne(ArticleEntity, {
       relations: ['content'],
       where: {
@@ -192,13 +225,13 @@ export class ArticleService {
     });
 
     if (!article) {
-      throw new ApiException(404, '文章不存在或已删除');
+      throw new ApiException(ApiErrorCode.NO_ARTICLE);
     }
 
     /* 分类存储 */
     const realCategories = [];
     if (categories?.length !== 0) {
-      for (const id of Object.values(categories)) {
+      for (const id of categories) {
         const one = await manager.findOne(CategoryEntity, {
           id: +id,
         });
@@ -206,16 +239,18 @@ export class ArticleService {
       }
       article.categories = realCategories;
     }
-    article.keywords = keywords;
-    article.title = title;
-    article.content.content = content;
+    if (keywords !== undefined) article.keywords = keywords;
+    if (title !== undefined) article.title = title;
+    if (content !== undefined) article.content.content = content;
+
+    article.updateTime = Date.now();
 
     /* mysql save */
-    await manager.save(ArticleEntity, article);
+    const newData = await manager.save(ArticleEntity, article);
 
     /* es save */
-    await es.update(article);
-    return { id: id, updateTime: new Date() };
+    await es.update(newData);
+    return { id: id, updateTime: newData.updateTime };
   }
 
   /**
