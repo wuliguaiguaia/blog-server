@@ -1,3 +1,5 @@
+import { ArticleEntity } from './../../entities/article.entity';
+import { ApiErrorCode } from 'src/common/exceptions/api.code.enum';
 import { authConfig } from './../../common/constants/role';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -20,6 +22,7 @@ import {
   QueryArticleDto,
 } from './dto/article.dto';
 import { Roles } from 'src/common/decorators/role.decorator';
+import { ApiException } from 'src/common/exceptions/api.exception';
 
 @Controller('article')
 export class ArticleController {
@@ -51,8 +54,10 @@ export class ArticleController {
    */
   @Get('/search')
   async getArticleListFromSearch(@Query() articleDto: QueryArticleListDto) {
+    const { columns } = articleDto;
     const [esTookTime, list, total, max_score] =
       await this.articleService.getArticleListFromSearchES(articleDto);
+
     return {
       esTookTime,
       total: total.value,
@@ -61,16 +66,9 @@ export class ArticleController {
         delete item._index;
         delete item._type;
         delete item._source.content;
-        item._source.categories = item._source.categories.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-          };
-        });
-
-        item.highlight.title = item.highlight.title[0];
+        item.highlight.title = item.highlight.title?.[0];
         item.highlight.content =
-          item.highlight['content.content'].join('...') + '...';
+          item.highlight['content.content']?.join('...') + '...';
         delete item.highlight['content.content'];
         return item;
       }),
@@ -82,19 +80,6 @@ export class ArticleController {
    */
   @Get()
   async getArticle(@Query() articleDto: QueryArticleDto) {
-    /* const {
-      _source,
-      _source: { categories, content },
-    } = await this.articleService.getArticleByIdES(articleDto);
-
-    _source.categories = categories.map((item) => {
-      return {
-        id: item.id,
-        name: item.name,
-      };
-    });
-    _source.content = content.content;
-    return _source; */
     const data = await this.articleService.getArticleById(articleDto);
     return data;
   }
@@ -114,8 +99,9 @@ export class ArticleController {
     @TransactionManager() manager: EntityManager,
   ) {
     articleDto.title = articleDto.title.trim();
+    const res = await this.articleService.addArticle(articleDto, manager);
     await this.commitService.addCommit(manager);
-    return await this.articleService.addArticle(articleDto, manager);
+    return res;
   }
 
   /**
@@ -129,9 +115,24 @@ export class ArticleController {
     @Body() articleDto: UpdateArticleDto,
     @TransactionManager() manager: EntityManager,
   ) {
-    articleDto.title = articleDto.title.trim();
+    if (articleDto.title !== undefined) {
+      articleDto.title = articleDto.title.trim();
+    }
+    const { id } = articleDto;
+    const article = await manager.findOne(ArticleEntity, {
+      where: {
+        id: +id,
+      },
+    });
+    if (!article || article?.deleted === 1) {
+      throw new ApiException(ApiErrorCode.NO_ARTICLE);
+    }
+    if (article.published === 1) {
+      throw new ApiException(ApiErrorCode.CANNOT_CHANGE);
+    }
+    const res = await this.articleService.updateArticle(articleDto, manager);
     await this.commitService.addCommit(manager);
-    return await this.articleService.updateArticle(articleDto, manager);
+    return res;
   }
 
   /**
@@ -145,8 +146,9 @@ export class ArticleController {
     @Body('id') id: number,
     @TransactionManager() manager: EntityManager,
   ) {
+    const res = await this.articleService.removeArticle(+id, manager);
     await this.commitService.addCommit(manager);
-    return await this.articleService.removeArticle(id, manager);
+    return res;
   }
 
   /**
@@ -160,8 +162,9 @@ export class ArticleController {
     @Body('id') id: number,
     @TransactionManager() manager: EntityManager,
   ) {
+    const res = await this.articleService.forceRemoveArticle(+id, manager);
     await this.commitService.addCommit(manager);
-    return await this.articleService.forceRemoveArticle(+id, manager);
+    return res;
   }
 
   /**
@@ -173,10 +176,16 @@ export class ArticleController {
   @Transaction()
   async publishArticle(
     @Body('id') id: number,
+    @Body('published') published: number,
     @TransactionManager() manager: EntityManager,
   ) {
+    const res = await this.articleService.publishArticle(
+      +id,
+      +published,
+      manager,
+    );
     await this.commitService.addCommit(manager);
-    return await this.articleService.publishArticle(+id, manager);
+    return res;
   }
 
   /**

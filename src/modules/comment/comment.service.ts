@@ -98,7 +98,7 @@ export class CommentService {
         .createQueryBuilder('comment')
         .where(`comment.articleId = ${articleId}`)
         // .where(`comment.articleId = ${articleId} and isCheck = 1`)
-        .orderBy('comment.create_time', 'ASC')
+        .orderBy('comment.createTime', 'ASC')
         .getMany()
     );
   }

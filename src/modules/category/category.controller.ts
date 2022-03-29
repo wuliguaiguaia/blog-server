@@ -28,8 +28,23 @@ export class CategoryController {
    */
   @Get('/list')
   async getCategoryList() {
-    const [list, total] = await this.cateogoryService.getCategoryList();
-    return { list, total };
+    const response = await this.cateogoryService.getCategoryList();
+    return {
+      list: response.map((item) => {
+        const { articles } = item;
+        let len = 0;
+        articles.forEach(({ deleted }) => {
+          if (deleted === 0) {
+            len++;
+          }
+        });
+        item.articlesLen = len;
+        delete item.articles;
+        const { id, name, articlesLen, updateTime } = item;
+        return { id, name, articlesLen, updateTime };
+      }),
+      total: response.length,
+    };
   }
 
   /**
@@ -90,8 +105,7 @@ export class CategoryController {
 
     for (const item of andArticles) {
       const { categories, id: _id } = item;
-      let cates = categories.filter((i) => i.id !== id);
-      cates = cates.map((i) => i.id);
+      const cates = categories.filter((i) => i !== id);
       await this.articleService.updateArticle(
         { id: _id, categories: cates },
         manager,

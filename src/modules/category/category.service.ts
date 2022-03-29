@@ -93,14 +93,7 @@ export class CategoryService {
     const response = await getRepository(CategoryEntity).find({
       relations: ['articles'],
     });
-    return [
-      response.map((item) => {
-        item.articlesLen = item.articles.length;
-        delete item.articles;
-        return item;
-      }),
-      response.length,
-    ];
+    return response;
   }
 
   /**

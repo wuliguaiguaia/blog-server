@@ -8,9 +8,6 @@ export class ArticleContentEntity extends BaseEntity {
   @Column({
     type: MysqlDataType.LONGTEXT,
     comment: '内容',
-    // default: '',
-    /* [ExceptionHandler] ER_BLOB_CANT_HAVE_DEFAULT: BLOB, TEXT, GEOMETRY or 
-      JSON column 'content' can't have a default value +1ms */
   })
   content: string;
 

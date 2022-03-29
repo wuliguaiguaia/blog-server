@@ -18,6 +18,7 @@ export enum ApiErrorCode {
   NO_DATA_CHANGE = 12001,
   NO_ARTICLE = 12002,
   CATEGORY_REPEAT = 12003,
+  CANNOT_CHANGE = 12004,
 }
 
 export const ApiErrorMap = {
@@ -36,4 +37,5 @@ export const ApiErrorMap = {
   [ApiErrorCode.NO_DATA_CHANGE]: '无内容修改',
   [ApiErrorCode.NO_ARTICLE]: '文章不存在或已删除',
   [ApiErrorCode.CATEGORY_REPEAT]: '分类名重复',
+  [ApiErrorCode.CANNOT_CHANGE]: '已发布不可修改',
 };

@@ -32,10 +32,8 @@ export class ArticleService {
 
   constructor(
     @InjectRepository(ArticleEntity)
-    private readonly articleInfoRepository: Repository<ArticleEntity>,
-  ) {
-    this.queryBuilder = getConnection().createQueryBuilder();
-  }
+    private readonly articleRepository: Repository<ArticleEntity>,
+  ) {}
 
   /**
    * 增加文章
@@ -47,7 +45,7 @@ export class ArticleService {
     /* 分类存储 */
     const realCategories = [];
     if (categories?.length !== 0) {
-      for (const id of Object.values(categories)) {
+      for (const id of categories) {
         const one = await manager.findOne(CategoryEntity, {
           id: +id,
         });
@@ -78,7 +76,10 @@ export class ArticleService {
     const data = await manager.save(ArticleEntity, article);
 
     /* es save */
-    await es.insert(data);
+    await es.insert({
+      ...data,
+      categories,
+    });
     return { id: data.id };
   }
 
@@ -127,7 +128,6 @@ export class ArticleService {
   /**
    * 获取单个文章详情 1.0
    * @param query.id 文章id
-   * TODO:可修改为 es
    */
   async getArticleById(query) {
     const { id } = query;
@@ -137,7 +137,7 @@ export class ArticleService {
       .leftJoinAndSelect('article.content', 'content')
       .where('article.id = :id', { id: +id })
       .getOne();
-    if (!data) {
+    if (!data || data.deleted === 1) {
       throw new ApiException(ApiErrorCode.NO_ARTICLE);
     }
     const { categories, content } = data;
@@ -162,7 +162,7 @@ export class ArticleService {
             should: [
               {
                 match: {
-                  'categories.id': category,
+                  categories: category,
                 },
               },
             ],
@@ -180,21 +180,18 @@ export class ArticleService {
    * 更新文章
    */
   async updateArticle(articleDto: UpdateArticleDto, manager) {
-    const { title, categories = [], keywords, content, id } = articleDto;
-    if (!title && !categories?.length && !keywords && !content) {
+    const { title, categories = [], keywords, content, id, desc } = articleDto;
+    if (!title && !categories?.length && !keywords && !content && !desc) {
       throw new ApiException(ApiErrorCode.NO_DATA_CHANGE);
     }
     const article = await manager.findOne(ArticleEntity, {
       relations: ['content'],
       where: {
         id: +id,
-        deleted: 0,
       },
     });
 
-    if (!article) {
-      throw new ApiException(ApiErrorCode.NO_ARTICLE);
-    }
+    if (!article) return;
     const date = Date.now();
 
     /* 分类存储 */
@@ -210,6 +207,7 @@ export class ArticleService {
     }
     if (keywords !== undefined) article.keywords = keywords;
     if (title !== undefined) article.title = title;
+    if (desc !== undefined) article.desc = desc;
     if (content !== undefined) {
       article.content.content = content;
       article.content.updateTime = date;
@@ -221,19 +219,12 @@ export class ArticleService {
     const newData = await manager.save(ArticleEntity, article);
 
     /* es save */
-    await es.update(newData);
-    return { id: id, updateTime: date };
-  }
+    await es.update({
+      ...newData,
+      categories: newData.categories.map((item) => item.id),
+    });
 
-  /**
-   * 通过手机号查找文章
-   * @param mobile
-   */
-  async getArticleByMobile(mobile: string) {
-    return await this.getArticleByCondition({
-      condition: 'mobile = :mobile',
-      value: { mobile },
-    })?.[0];
+    return { id: id, updateTime: date };
   }
 
   /**
@@ -371,7 +362,7 @@ export class ArticleService {
       const matches = categories.reduce((res, item) => {
         res.push({
           match: {
-            'categories.id': item,
+            categories: item,
           },
         });
         return res;
@@ -432,7 +423,6 @@ export class ArticleService {
       const [list, total] = await getRepository(ArticleEntity)
         .createQueryBuilder('article')
         .leftJoinAndSelect('article.categories', 'category')
-        .leftJoinAndSelect('article.content', 'content')
         .where('article.deleted = 0')
         .skip(prepage * (page - 1) || 0)
         .take(prepage && prepage)
@@ -442,14 +432,8 @@ export class ArticleService {
       return [
         total,
         list.map((item: any) => {
-          const { categories, content } = item;
-          item.categories = categories.map((j) => {
-            return {
-              id: j.id,
-              name: j.name,
-            };
-          });
-          item.content = content?.content?.substr(0, 350) || '';
+          const { categories } = item;
+          item.categories = categories.map((item) => item.id);
           return item;
         }),
       ];
@@ -474,7 +458,7 @@ export class ArticleService {
       const matches = categories.reduce((res, item) => {
         res.push({
           match: {
-            'categories.id': item,
+            categories: item,
           },
         });
         return res;
@@ -497,14 +481,8 @@ export class ArticleService {
     } = body;
     return [
       total.value,
-      hits.map(({ _source, _source: { categories, content } }) => {
-        _source.categories = categories.map((item) => {
-          return {
-            id: item.id,
-            name: item.name,
-          };
-        });
-        _source.content = content.content?.substr(0, 350);
+      hits.map(({ _source }) => {
+        delete _source.content;
         return _source;
       }),
       took,
@@ -633,9 +611,9 @@ export class ArticleService {
   /**
    * 发表文章
    */
-  async publishArticle(id: number, manager: EntityManager) {
-    await manager.update(ArticleEntity, id, { published: 1 });
-    await es.update({ id, published: 1 });
+  async publishArticle(id: number, published: number, manager: EntityManager) {
+    await manager.update(ArticleEntity, id, { published });
+    await es.update({ id, published });
     return null;
   }
 
