@@ -38,14 +38,14 @@ export class MessageService {
       return getRepository(MessageEntity)
         .createQueryBuilder('message')
         .where(`message.isCheck = ${isCheck}`)
-        .orderBy('create_time', Number(sort) === 0 ? 'DESC' : 'ASC')
+        .orderBy('createTime', Number(sort) === 0 ? 'DESC' : 'ASC')
         .skip(prepage * (page - 1))
         .take(prepage * page)
         .getManyAndCount();
     }
     return getRepository(MessageEntity)
       .createQueryBuilder('message')
-      .orderBy('create_time', Number(sort) === 0 ? 'DESC' : 'ASC')
+      .orderBy('createTime', Number(sort) === 0 ? 'DESC' : 'ASC')
       .skip(prepage * (page - 1))
       .take(prepage * page)
       .getManyAndCount();
