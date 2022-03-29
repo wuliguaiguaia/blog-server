@@ -54,7 +54,6 @@ export class ArticleController {
    */
   @Get('/search')
   async getArticleListFromSearch(@Query() articleDto: QueryArticleListDto) {
-    const { columns } = articleDto;
     const [esTookTime, list, total, max_score] =
       await this.articleService.getArticleListFromSearchES(articleDto);
 
@@ -68,7 +67,7 @@ export class ArticleController {
         delete item._source.content;
         item.highlight.title = item.highlight.title?.[0];
         item.highlight.content =
-          item.highlight['content.content']?.join('...') + '...';
+          item.highlight['content.content']?.join('...') || '';
         delete item.highlight['content.content'];
         return item;
       }),
