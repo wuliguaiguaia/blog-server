@@ -12,7 +12,7 @@ export class CommitService {
    * 增加commit
    */
   async addCommit(manager: EntityManager) {
-    const curDay = new Date().toDateString();
+    const curDay = new Date().toISOString().slice(0, 10);
     const commit = await manager.findOne(CommitEntity, {
       select: ['date', 'count', 'id'],
       where: {
