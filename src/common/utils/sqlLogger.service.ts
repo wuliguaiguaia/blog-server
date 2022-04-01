@@ -50,26 +50,29 @@ export class SqlLogger implements Logger {
     const req_context = getContext();
     if (!req_context.logId) return;
     const { logId, url } = req_context;
-    return {
-      logId,
-      url,
-      query,
-      parameters,
-      error,
-      time,
-    };
+    return [
+      '[SQL log]',
+      {
+        logId,
+        url,
+        query,
+        parameters,
+        error,
+        time,
+      },
+    ];
   }
 
   logQuery(query: string, parameters?: any[], queryRunner?: QueryRunner) {
     const req_context = getContext();
     if (!req_context.logId) return;
-    this.logger.info(this.getFormatMessage({ query, parameters }));
+    this.logger.info(...this.getFormatMessage({ query, parameters }));
   }
   logQueryError(error: string | Error, query: string, parameters?: any[]) {
-    this.logger.error(this.getFormatMessage({ error, query, parameters }));
+    this.logger.error(...this.getFormatMessage({ error, query, parameters }));
   }
   logQuerySlow(time: number, query: string, parameters?: any[]) {
-    this.logger.warn(this.getFormatMessage({ time, query, parameters }));
+    this.logger.warn(...this.getFormatMessage({ time, query, parameters }));
   }
   logSchemaBuild(message: string, queryRunner?: QueryRunner) {
     this.logger.info(message);

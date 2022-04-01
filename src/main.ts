@@ -34,6 +34,7 @@ async function bootstrap() {
   const redisClient = redis.createClient(
     config.redisServer.port,
     config.redisServer.host,
+    { auth_pass: config.redisServer.pass },
   );
   redisClient.on('error', (err) => {
     console.log('Could not establish a connection with redis. ' + err);
