@@ -8,7 +8,9 @@ import { MessageEntity } from './message.entity';
  */
 @Entity('comment')
 export class CommentEntity extends MessageEntity {
-  @ManyToOne((type) => ArticleEntity, (article) => article.comments)
+  @ManyToOne((type) => ArticleEntity, (article) => article.comments, {
+    onDelete: 'CASCADE',
+  })
   article: ArticleEntity;
 
   @Column({

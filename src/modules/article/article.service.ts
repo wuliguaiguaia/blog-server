@@ -130,14 +130,14 @@ export class ArticleService {
    * @param query.id 文章id
    */
   async getArticleById(query) {
-    const { id } = query;
+    const { id, published } = query;
     const data = await getConnection()
       .createQueryBuilder(ArticleEntity, 'article')
       .leftJoinAndSelect('article.categories', 'category')
       .leftJoinAndSelect('article.content', 'content')
-      .where('article.id = :id', { id: +id })
+      .where('article.id = :id and article.deleted = 0', { id: +id })
       .getOne();
-    if (!data || data.deleted === 1) {
+    if (!data || (published !== undefined && data?.published === 0)) {
       throw new ApiException(ApiErrorCode.NO_ARTICLE);
     }
     const { categories, content } = data;
@@ -621,9 +621,23 @@ export class ArticleService {
    * 获取文章与留言总数
    */
   async getCount(manager: EntityManager) {
-    const articleLen = await manager.count(ArticleEntity);
-    const messageLen = await manager.count(MessageEntity);
-    const CommentLen = await manager.count(CommentEntity);
+    const articleLen = await manager.count(ArticleEntity, {
+      published: 1,
+      deleted: 0,
+    });
+    const messageLen = await manager.count(MessageEntity, {
+      isCheck: 1,
+    });
+    const CommentLen = await manager.count(CommentEntity, {
+      relations: ['article'],
+      where: {
+        isCheck: 1,
+        article: {
+          published: 1,
+          deleted: 0,
+        },
+      },
+    });
     return {
       articleLen,
       messageLen: messageLen + CommentLen,

@@ -10,6 +10,7 @@ import {
   Get,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/role.decorator';
@@ -27,15 +28,22 @@ export class CategoryController {
    * 获取分类列表
    */
   @Get('/list')
-  async getCategoryList() {
+  async getCategoryList(@Query() categoryDto) {
+    const { published: _published } = categoryDto;
     const response = await this.cateogoryService.getCategoryList();
     return {
       list: response.map((item) => {
         const { articles } = item;
         let len = 0;
-        articles.forEach(({ deleted }) => {
+        articles.forEach(({ deleted, published }) => {
           if (deleted === 0) {
-            len++;
+            if (_published !== undefined) {
+              if (published === +_published) {
+                len++;
+              }
+            } else {
+              len++;
+            }
           }
         });
         item.articlesLen = len;

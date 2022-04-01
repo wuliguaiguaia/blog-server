@@ -32,8 +32,7 @@ export class SqlLogger implements Logger {
           level: 'info',
           ...logDefaultOptions,
         }),
-        process.env.NODE_ENV !== 'production' &&
-          new winston.transports.Console(),
+        new winston.transports.Console(),
       ].filter(Boolean),
     });
   }

@@ -57,6 +57,7 @@ export class AuthController {
 
   @Delete('logout')
   async logout(@Request() req) {
+    console.log(222);
     req.session.destroy((err) => {
       // 注销
       if (err) {

@@ -71,9 +71,7 @@ import { logDefaultOptions } from './common/constants';
           level: 'error',
           ...logDefaultOptions,
         }),
-        // 保留标准输出    控制台输出  pm2 log来源
-        process.env.NODE_ENV !== 'production' &&
-          new winston.transports.Console(),
+        new winston.transports.Console(),
       ].filter(Boolean),
     }),
     UserModule,

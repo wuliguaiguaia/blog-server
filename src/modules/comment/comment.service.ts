@@ -1,3 +1,5 @@
+import { ApiErrorCode } from 'src/common/exceptions/api.code.enum';
+import { ApiException } from 'src/common/exceptions/api.exception';
 import { ArticleEntity } from 'src/entities/article.entity';
 /*
  * service 提供操作数据库服务接口
@@ -14,6 +16,9 @@ export class CommentService {
   async addComment(commentDto) {
     const { articleId } = commentDto;
     const article = await getRepository(ArticleEntity).findOne(articleId);
+    if (article.deleted == 1) {
+      throw new ApiException(ApiErrorCode.NO_ARTICLE, '文章已删除无法增加评论');
+    }
     commentDto.article = article;
     commentDto.createTime = Date.now();
     return getRepository(CommentEntity).save(commentDto);
@@ -93,14 +98,11 @@ export class CommentService {
    */
   async getCommentListById(commentDto) {
     const { articleId } = commentDto;
-    return (
-      getRepository(CommentEntity)
-        .createQueryBuilder('comment')
-        .where(`comment.articleId = ${articleId}`)
-        // .where(`comment.articleId = ${articleId} and isCheck = 1`)
-        .orderBy('comment.createTime', 'ASC')
-        .getMany()
-    );
+    return getRepository(CommentEntity)
+      .createQueryBuilder('comment')
+      .where(`comment.articleId = ${articleId} and comment.isCheck = 1`)
+      .orderBy('comment.createTime', 'ASC')
+      .getMany();
   }
 
   /**

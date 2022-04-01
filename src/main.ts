@@ -59,7 +59,7 @@ async function bootstrap() {
       cookie: {
         path: '/',
         httpOnly: true,
-        maxAge: 2592000 * 1000, // 有效期，单位是毫秒
+        maxAge: 2592000 * 1000,
       },
     }),
   );
