@@ -11,19 +11,20 @@ import { ValidationException } from './../exceptions/validation.exception';
 export class ValidationPipe implements PipeTransform {
   async transform(value: any, metadata: ArgumentMetadata) {
     const { metatype } = metadata;
-    if (!metatype || typeof metatype !== 'function') {
+    if (!metatype || !this.toValidate(metatype)) {
       return value;
     }
-
     const object = plainToClass(metatype, value);
-    // console.log('value', value, '--->', 'object', object);
-
     const errors = await validate(object);
 
     if (errors.length) {
       throw new ValidationException(errors);
     }
-
     return value;
+  }
+
+  private toValidate(metatype): boolean {
+    const types = [String, Boolean, Number, Array, Object];
+    return !types.includes(metatype);
   }
 }

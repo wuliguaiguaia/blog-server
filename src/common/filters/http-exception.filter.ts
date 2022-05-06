@@ -1,20 +1,19 @@
+import { ApiException } from 'src/common/exceptions/api.exception';
 import { LoggerService } from '@nestjs/common';
-/**
- * 全局异常捕获
- * 追加错误日志
- */
-
 import {
   HttpException,
   ExceptionFilter,
   Catch,
   ArgumentsHost,
 } from '@nestjs/common';
-
+import * as cls from 'cls-hooked';
 import { Request, Response } from 'express';
-import { Logger } from '@nestjs/common';
 
-@Catch()
+/**
+ * 全局异常捕获
+ * 追加错误日志
+ */
+@Catch(HttpException, ApiException)
 export class HttpExceptionFilter implements ExceptionFilter {
   constructor(private readonly logger: LoggerService) {}
 
@@ -22,19 +21,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const req = ctx.getRequest<Request>();
     const res = ctx.getResponse<Response>();
-    const { url, method, query, body } = req;
+    const { url, method, query, params, body, user } = req;
     let responseData = {};
 
     if (exception instanceof HttpException) {
       const status = exception.getStatus();
-      // 自定义业务状态码
-      const errNo = (exception as any).getErrorCode
-        ? (exception as any).getErrorCode()
-        : status;
-      // 自定义业务错误信息
-      const errStr = (exception as any).getErrorMessage
-        ? (exception as any).getErrorMessage()
-        : exception.getResponse();
+      const errNo = (exception as any)?.getErrorCode?.() || status;
+      const errStr =
+        (exception as any)?.getErrorMessage?.() || exception.getResponse();
 
       responseData = {
         errNo,
@@ -56,13 +50,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
       res.status(status).json(responseData);
     }
 
+    const logId = this.getLogid();
     const msg = {
+      logId,
       url,
       method,
-      params: query,
+      query,
+      params,
       body,
+      user,
       data: responseData,
     };
     this.logger.error(msg, 'HttpExceptionFilter');
+  }
+
+  getLogid() {
+    const namespace = cls.getNamespace('lemon');
+    return namespace.get('logid');
   }
 }

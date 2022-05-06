@@ -1,18 +1,22 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 // data transfer object
 
 export class CreateUserDto {
+  @IsString()
   @IsNotEmpty({
     message: '用户名不能为空',
   })
   username: string;
 
+  @IsString()
   @IsNotEmpty({
     message: '密码不能为空',
   })
   password: string;
 
+  @IsNumber()
+  @IsOptional()
   role?: number;
 }
 
@@ -27,30 +31,31 @@ export class QueryUserDto {
   })
   prepage: number;
 
+  @IsOptional()
   role?: string;
 }
 
 export class UpdateUserDto {
-  @IsNotEmpty({
-    message: '用户id不能为空',
-  })
+  @IsNumber()
+  @IsNotEmpty()
   id: number;
 
+  @IsOptional()
+  @IsString()
   username?: string;
 
+  @IsOptional()
+  @IsString()
   password?: string;
 
+  @IsOptional()
+  @IsNumber()
   role?: number;
 }
 
 export class DeleteUserDto {}
 
 export class LoginDto {
-  // @IsNotEmpty({
-  //   message: '手机号不能为空',
-  // })
-  // mobile: string;
-
   @IsNotEmpty({
     message: '用户名不能为空',
   })
