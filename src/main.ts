@@ -15,7 +15,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { RolesGuard } from './common/guards/role.guard';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {});
-  console.log(123);
 
   app.setGlobalPrefix('api/blog');
   app.useGlobalFilters(
