@@ -108,7 +108,7 @@ export class ArticleController {
    */
   @Put('/update')
   @UseGuards(AuthGuard('applySession'))
-  @Roles(authConfig.article.edit) /* 有已发布能更新的漏洞 */
+  @Roles(authConfig.article.edit)
   @Transaction()
   async updateArticle(
     @Body() articleDto: UpdateArticleDto,
@@ -131,6 +131,37 @@ export class ArticleController {
     }
     const res = await this.articleService.updateArticle(articleDto, manager);
     await this.commitService.addCommit(manager);
+    return res;
+  }
+
+  /**
+   * 更新文章时间
+   */
+  @Put('/update/time')
+  @UseGuards(AuthGuard('applySession'))
+  @Roles(authConfig.article.edit)
+  @Transaction()
+  async updateArticleTime(
+    @Body() articleDto: UpdateArticleDto,
+    @TransactionManager() manager: EntityManager,
+  ) {
+    const { id } = articleDto;
+    const article = await manager.findOne(ArticleEntity, {
+      where: {
+        id: +id,
+      },
+    });
+    if (!article || article?.deleted === 1) {
+      throw new ApiException(ApiErrorCode.NO_ARTICLE);
+    }
+    if (article.published === 1) {
+      throw new ApiException(ApiErrorCode.CANNOT_CHANGE);
+    }
+    const res = await this.articleService.updateArticleTime(
+      articleDto,
+      manager,
+      article,
+    );
     return res;
   }
 

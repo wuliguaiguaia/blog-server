@@ -58,4 +58,8 @@ export class UpdateArticleDto extends QueryArticleDto {
   content?: string;
 
   desc?: string;
+
+  updateTime?: string;
+
+  createTime?: string;
 }

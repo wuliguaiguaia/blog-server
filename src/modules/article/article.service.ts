@@ -229,6 +229,25 @@ export class ArticleService {
   }
 
   /**
+   * 更新文章时间
+   */
+  async updateArticleTime(articleDto: UpdateArticleDto, manager, article) {
+    const { updateTime, createTime } = articleDto;
+    if (createTime) article.createTime = createTime;
+    if (updateTime) article.updateTime = updateTime;
+
+    /* mysql save */
+    const newData = await manager.save(ArticleEntity, article);
+
+    /* es save */
+    await es.update({
+      ...newData,
+    });
+
+    return true;
+  }
+
+  /**
    * 模糊搜索1.0 mysql 原生查询
    */
   async getArticleListFromSearch(articleDto: QueryArticleListDto) {
