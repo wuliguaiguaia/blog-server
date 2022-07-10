@@ -195,4 +195,13 @@ export class ArticleController {
   async getCount(@TransactionManager() manager: EntityManager) {
     return await this.articleService.getCount(manager);
   }
+
+  /**
+   * es数据恢复
+   */
+  @Get('/recover')
+  @Transaction()
+  async recoverES(@TransactionManager() manager: EntityManager) {
+    return await this.articleService.recoverES(manager);
+  }
 }

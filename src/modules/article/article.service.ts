@@ -385,6 +385,26 @@ export class ArticleService {
     return [took, hits, total, max_score];
   }
 
+  async getArticleListAll(articleDto: QueryArticleListDto, manger) {
+    const { prepage, page } = articleDto;
+    const [list, total] = await getRepository(ArticleEntity)
+      .createQueryBuilder('article')
+      .leftJoinAndSelect('article.categories', 'category')
+      .leftJoinAndSelect('article.content', 'content')
+      .where('article.deleted = 0')
+      .skip(prepage * (page - 1) || 0)
+      .take(prepage && prepage)
+      .orderBy({ 'article.updateTime': 'DESC' })
+      .getManyAndCount();
+    return {
+      total,
+      list: list.map((item: any) => {
+        const { categories } = item;
+        item.categories = categories.map((item) => item.id);
+        return item;
+      }),
+    };
+  }
   /**
    * 查询文章列表 2.0 es
    */
@@ -420,20 +440,11 @@ export class ArticleService {
       (!categories || (categories && categories.length === 0)) &&
       published === null
     ) {
-      const [list, total] = await getRepository(ArticleEntity)
-        .createQueryBuilder('article')
-        .leftJoinAndSelect('article.categories', 'category')
-        .where('article.deleted = 0')
-        .skip(prepage * (page - 1) || 0)
-        .take(prepage && prepage)
-        .orderBy({ 'article.updateTime': 'DESC' })
-        .getManyAndCount();
-
+      const { total, list } = await this.getArticleListAll(articleDto, manger);
       return [
         total,
-        list.map((item: any) => {
-          const { categories } = item;
-          item.categories = categories.map((item) => item.id);
+        list.map((item) => {
+          delete item.content;
           return item;
         }),
       ];
@@ -642,5 +653,28 @@ export class ArticleService {
       articleLen,
       messageLen: messageLen + CommentLen,
     };
+  }
+
+  /* 恢复es */
+  async recoverES(manager) {
+    const page = 0,
+      prepage = 10,
+      list = [];
+    let total = 0;
+    do {
+      const data = await this.getArticleListAll(
+        { prepage, page: page + 1 },
+        manager,
+      );
+      total = data.total;
+      list.push(...data.list);
+      console.log(list);
+    } while (total !== list.length);
+    for (let i = 0; i < list.length; i++) {
+      await es.insert({
+        ...list[i],
+      });
+    }
+    return list.map((item) => item.id);
   }
 }
