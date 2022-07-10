@@ -40,7 +40,7 @@ export class ArticleService {
    * @param articleDto
    */
   async addArticle(articleDto: CreateArticleDto, manager: EntityManager) {
-    const { title, categories, keywords, content } = articleDto;
+    const { title, categories, keywords, content, desc } = articleDto;
 
     /* 分类存储 */
     const realCategories = [];
@@ -60,6 +60,7 @@ export class ArticleService {
     article.categories = realCategories;
     article.id = genId();
     article.keywords = keywords;
+    article.desc = desc;
     article.title = title;
     article.createTime = Date.now();
     article.updateTime = Date.now();
