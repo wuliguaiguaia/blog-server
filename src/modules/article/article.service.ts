@@ -220,10 +220,13 @@ export class ArticleService {
     const newData = await manager.save(ArticleEntity, article);
 
     /* es save */
-    await es.update({
-      ...newData,
-      categories: newData.categories.map((item) => item.id),
-    });
+    const esData = newData.categories
+      ? {
+          ...newData,
+          categories: newData.categories.map((item) => item.id),
+        }
+      : newData;
+    await es.update(esData);
 
     return { id: id, updateTime: date };
   }
@@ -233,6 +236,7 @@ export class ArticleService {
    */
   async updateArticleTime(articleDto: UpdateArticleDto, manager, article) {
     const { updateTime, createTime } = articleDto;
+
     if (createTime) article.createTime = createTime;
     if (updateTime) article.updateTime = updateTime;
 
