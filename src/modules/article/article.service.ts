@@ -182,7 +182,13 @@ export class ArticleService {
    */
   async updateArticle(articleDto: UpdateArticleDto, manager) {
     const { title, categories = [], keywords, content, id, desc } = articleDto;
-    if (!title && !categories?.length && !keywords && !content && !desc) {
+    if (
+      title === undefined &&
+      !categories?.length &&
+      keywords === undefined &&
+      content === undefined &&
+      desc === undefined
+    ) {
       throw new ApiException(ApiErrorCode.NO_DATA_CHANGE);
     }
     const article = await manager.findOne(ArticleEntity, {
