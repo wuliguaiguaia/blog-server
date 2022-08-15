@@ -61,6 +61,7 @@ async function bootstrap() {
         path: '/',
         httpOnly: true,
         maxAge: 2592000 * 1000,
+        domain: process.env.NODE_ENV === 'dev' ? 'localhost' : 'orangesolo.cn',
       },
     }),
   );
