@@ -8,13 +8,11 @@ const client = new Client({
 });
 
 const index = 'blog_articles';
-const type = 'alias_doc';
 
 const insert = async (body) => {
   return client.index({
     id: body.id,
     index,
-    type,
     body,
   });
 };
@@ -22,7 +20,6 @@ const update = async (body) => {
   return client.update({
     id: body.id,
     index,
-    type,
     body: {
       doc: body,
     },
@@ -32,14 +29,12 @@ const remove = async ({ id }) => {
   return client.delete({
     id,
     index,
-    type,
   });
 };
 const get = async ({ id }) => {
   return client.get({
     id,
     index,
-    type,
   });
 };
 interface IPropSearch {
@@ -51,7 +46,6 @@ const search = async ({ from, size, body }: IPropSearch) => {
   if (from || size) {
     return client.search({
       index,
-      type,
       from,
       size,
       body,
@@ -59,7 +53,6 @@ const search = async ({ from, size, body }: IPropSearch) => {
   } else {
     return client.search({
       index,
-      type,
       body,
     });
   }

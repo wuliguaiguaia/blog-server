@@ -687,16 +687,17 @@ export class ArticleService {
 
   /* 恢复es */
   async recoverES(manager) {
-    const page = 0,
-      prepage = 10,
+    let page = 0,
+      total = 0;
+    const prepage = 10,
       list = [];
-    let total = 0;
     do {
       const data = await this.getArticleListAll(
         { prepage, page: page + 1 },
         manager,
       );
       total = data.total;
+      page = page + 1;
       list.push(...data.list);
       console.log(list);
     } while (total !== list.length);
