@@ -21,4 +21,4 @@ folder：blog-server
 端口默认 3009
 
 es: 9200
-kibana: <http://81.70.58.132:5601/app/home>
+kibana: <http://xxx:5601/app/home>
