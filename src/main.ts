@@ -110,7 +110,7 @@ async function bootstrap() {
   app.use(clsMiddleware);
 
   app.enableCors({
-    origin: [/orangesolo\.cn$/],
+    origin: [/orangesolo\.cn$/, config.frontEnd],
     credentials: true,
   });
   // app.use(cookieParser());

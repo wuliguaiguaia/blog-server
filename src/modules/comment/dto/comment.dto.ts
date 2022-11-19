@@ -16,9 +16,9 @@ export class CreateCommentDto {
   })
   username: string;
 
-  @IsNotEmpty({
+  /* @IsNotEmpty({
     message: '邮箱不能为空',
-  })
+  }) */
   email: string;
 
   website?: string;
